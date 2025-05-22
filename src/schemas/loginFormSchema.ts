@@ -10,7 +10,7 @@ export const loginFormSchema = z.object({
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
   }),
-  role: z.enum(['employee', 'support', 'service', 'chat', 'query', 'tracking'] as const),
+  role: z.enum(['employee', 'support', 'service', 'chat', 'query', 'tracking', 'technical'] as const),
 });
 
 export type LoginFormValues = z.infer<typeof loginFormSchema>;

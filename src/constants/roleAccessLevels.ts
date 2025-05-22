@@ -1,5 +1,4 @@
-
-import { MessageSquare, Shield, Users, Car, Search, MapPin, Mail } from 'lucide-react';
+import { MessageSquare, Shield, Users, Car, Search, MapPin, Mail, Wrench } from 'lucide-react';
 
 // Define access levels for each role
 export const roleAccessLevels = {
@@ -69,6 +68,19 @@ export const roleAccessLevels = {
       { name: 'Live Map', description: 'Track rides in real-time', path: '/live-map' },
       { name: 'Ride History', description: 'View historical ride data', path: '/ride-history' },
       { name: 'Rider Tracking', description: 'Track rider locations', path: '/rider-tracking' }
+    ]
+  },
+  technical: {
+    name: 'Technical Support',
+    description: 'Solve technical issues for drivers and riders',
+    permissions: ['view_tickets', 'resolve_tickets', 'view_technical_issues', 'view_drivers', 'view_riders', 'access_system_logs'],
+    icon: Wrench,
+    applications: [
+      { name: 'Technical Tickets', description: 'View and resolve technical tickets', path: '/technical-tickets' },
+      { name: 'System Diagnostics', description: 'Run diagnostics on app and device issues', path: '/system-diagnostics' },
+      { name: 'App Troubleshooting', description: 'Help users with app-related problems', path: '/app-troubleshooting' },
+      { name: 'Device Issues', description: 'Resolve hardware and device problems', path: '/device-issues' },
+      { name: 'Knowledge Base', description: 'Access technical documentation', path: '/technical-knowledge-base' }
     ]
   },
 };

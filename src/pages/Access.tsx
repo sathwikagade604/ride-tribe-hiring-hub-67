@@ -18,6 +18,7 @@ import ServiceContent from '@/components/access/ServiceContent';
 import ChatContent from '@/components/access/ChatContent';
 import QueryContent from '@/components/access/QueryContent';
 import TrackingContent from '@/components/access/TrackingContent';
+import TechnicalContent from '@/components/access/TechnicalContent';
 import DriverDetail from '@/components/access/DriverDetail';
 import RoleHeader from '@/components/access/RoleHeader';
 import AccessPermissionsBanner from '@/components/access/AccessPermissionsBanner';
@@ -96,6 +97,8 @@ const Access = () => {
         return <QueryContent />;
       case 'tracking':
         return <TrackingContent />;
+      case 'technical':
+        return <TechnicalContent />;
       default:
         return (
           <div className="text-center p-8">
