@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
@@ -10,14 +9,36 @@ import SafetySection from '../components/SafetySection';
 import Footer from '../components/Footer';
 
 const Index = () => {
+  // Set document title using useEffect
+  React.useEffect(() => {
+    document.title = "RideShare India | Next Generation Ride Sharing";
+    
+    // Add meta tags
+    const metaDescription = document.createElement('meta');
+    metaDescription.name = 'description';
+    metaDescription.content = "RideShare India offers next-generation ride sharing services with better benefits for both drivers and passengers.";
+    document.head.appendChild(metaDescription);
+    
+    const metaRegion = document.createElement('meta');
+    metaRegion.name = 'geo.region';
+    metaRegion.content = 'IN';
+    document.head.appendChild(metaRegion);
+    
+    const metaPlacename = document.createElement('meta');
+    metaPlacename.name = 'geo.placename';
+    metaPlacename.content = 'India';
+    document.head.appendChild(metaPlacename);
+    
+    // Cleanup function to remove meta tags when component unmounts
+    return () => {
+      document.head.removeChild(metaDescription);
+      document.head.removeChild(metaRegion);
+      document.head.removeChild(metaPlacename);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>RideShare India | Next Generation Ride Sharing</title>
-        <meta name="description" content="RideShare India offers next-generation ride sharing services with better benefits for both drivers and passengers." />
-        <meta name="geo.region" content="IN" />
-        <meta name="geo.placename" content="India" />
-      </Helmet>
       <Navbar />
       <main className="flex-1">
         <Hero />

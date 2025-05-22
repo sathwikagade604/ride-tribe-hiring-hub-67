@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import DriversSection from '../components/DriversSection';
@@ -8,15 +7,36 @@ import { Button } from '@/components/ui/button';
 import { IndianRupee } from 'lucide-react';
 
 const DriversPage = () => {
+  // Set document title using useEffect
+  React.useEffect(() => {
+    document.title = "Drive With Us | RideShare India";
+    
+    // Add meta tags
+    const metaDescription = document.createElement('meta');
+    metaDescription.name = 'description';
+    metaDescription.content = "Join our team of professional drivers across India and enjoy benefits that traditional ride-sharing companies don't offer.";
+    document.head.appendChild(metaDescription);
+    
+    const metaRegion = document.createElement('meta');
+    metaRegion.name = 'geo.region';
+    metaRegion.content = 'IN';
+    document.head.appendChild(metaRegion);
+    
+    const metaPlacename = document.createElement('meta');
+    metaPlacename.name = 'geo.placename';
+    metaPlacename.content = 'India';
+    document.head.appendChild(metaPlacename);
+    
+    // Cleanup function to remove meta tags when component unmounts
+    return () => {
+      document.head.removeChild(metaDescription);
+      document.head.removeChild(metaRegion);
+      document.head.removeChild(metaPlacename);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Drive With Us | RideShare India</title>
-        <meta name="description" content="Join our team of professional drivers across India and enjoy benefits that traditional ride-sharing companies don't offer." />
-        <meta name="geo.region" content="IN" />
-        <meta name="geo.placename" content="India" />
-      </Helmet>
-      
+    <div className="min-h-screen flex flex-col">      
       <Navbar />
       
       <main className="flex-1">
