@@ -19,6 +19,7 @@ const Navbar = () => {
           <Link to="/drivers" className="nav-link">For Drivers</Link>
           <Link to="/riders" className="nav-link">For Riders</Link>
           <Link to="/safety" className="nav-link">Safety</Link>
+          <Link to="/access" className="nav-link">Quick Access</Link>
         </div>
         
         <div className="hidden md:flex items-center gap-3">
@@ -42,6 +43,7 @@ const Navbar = () => {
             <Link to="/drivers" className="nav-link" onClick={() => setIsMenuOpen(false)}>For Drivers</Link>
             <Link to="/riders" className="nav-link" onClick={() => setIsMenuOpen(false)}>For Riders</Link>
             <Link to="/safety" className="nav-link" onClick={() => setIsMenuOpen(false)}>Safety</Link>
+            <Link to="/access" className="nav-link" onClick={() => setIsMenuOpen(false)}>Quick Access</Link>
             <div className="flex gap-2 mt-2">
               <Button variant="outline" className="btn-outline flex-1">Log In</Button>
               <Button className="btn-primary flex-1">Sign Up</Button>
