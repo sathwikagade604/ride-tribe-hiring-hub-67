@@ -13,6 +13,8 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
+        <title>RideShare India | Next Generation Ride Sharing</title>
+        <meta name="description" content="RideShare India offers next-generation ride sharing services with better benefits for both drivers and passengers." />
         <meta name="geo.region" content="IN" />
         <meta name="geo.placename" content="India" />
       </Helmet>
