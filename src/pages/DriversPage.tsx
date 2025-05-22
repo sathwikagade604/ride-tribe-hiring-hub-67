@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Helmet } from 'react-helmet';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import DriversSection from '../components/DriversSection';
@@ -9,6 +10,13 @@ import { IndianRupee } from 'lucide-react';
 const DriversPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Drive With Us | RideShare India</title>
+        <meta name="description" content="Join our team of professional drivers across India and enjoy benefits that traditional ride-sharing companies don't offer." />
+        <meta name="geo.region" content="IN" />
+        <meta name="geo.placename" content="India" />
+      </Helmet>
+      
       <Navbar />
       
       <main className="flex-1">
