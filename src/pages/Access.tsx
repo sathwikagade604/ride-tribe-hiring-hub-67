@@ -21,6 +21,7 @@ import TrackingContent from '@/components/access/TrackingContent';
 import DriverDetail from '@/components/access/DriverDetail';
 import RoleHeader from '@/components/access/RoleHeader';
 import AccessPermissionsBanner from '@/components/access/AccessPermissionsBanner';
+import QuickAccess from '@/components/access/QuickAccess';
 
 const Access = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -164,6 +165,9 @@ const Access = () => {
               />
               
               <AccessPermissionsBanner role={role as RoleKey} />
+              
+              {/* Add Quick Access component for role-specific applications */}
+              <QuickAccess role={role as RoleKey} />
               
               {activeTab === 'general' ? renderRoleContent() : (
                 selectedDriver && <DriverDetail driver={selectedDriver} onBack={() => setActiveTab('general')} />
