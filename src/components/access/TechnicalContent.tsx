@@ -201,7 +201,7 @@ const TechnicalContent: React.FC = () => {
                         <Badge variant={
                           issue.status === 'open' ? 'default' : 
                           issue.status === 'in progress' ? 'secondary' : 
-                          'success'
+                          'outline'
                         }>
                           {issue.status}
                         </Badge>
