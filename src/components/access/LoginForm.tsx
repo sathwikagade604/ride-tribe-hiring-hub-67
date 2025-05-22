@@ -86,12 +86,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                       defaultValue={field.value}
                       className="space-y-3"
                     >
-                      {Object.entries(roleAccessLevels).map(([key, role]) => (
+                      {Object.entries(roleAccessLevels).map(([key, roleData]) => (
                         <FormItem key={key} className="flex items-center space-x-3 space-y-0">
                           <FormControl>
                             <RadioGroupItem value={key} />
                           </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">{role.name}</FormLabel>
+                          <FormLabel className="font-normal cursor-pointer">{roleData.name}</FormLabel>
                         </FormItem>
                       ))}
                     </RadioGroup>
@@ -115,9 +115,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.entries(roleData.subRoles || {}).map(([key, subRole]) => (
+                        {Object.entries(roleData.subRoles || {}).map(([key, subRoleData]) => (
                           <SelectItem key={key} value={key}>
-                            {subRole.name}
+                            {subRoleData.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

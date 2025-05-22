@@ -25,6 +25,10 @@ export interface RoleDefinition {
   subRoles?: Record<string, SubRole>;
 }
 
+// Define the role keys type first to avoid circular reference
+export type RoleKey = 'employee' | 'support' | 'service' | 'chat' | 'query' | 'tracking' | 'technical' | 'safety' | 'emergency' | 'callcenter';
+export type SubRoleKey = string;
+
 // Define access levels for each role
 export const roleAccessLevels: Record<RoleKey, RoleDefinition> = {
   employee: {
@@ -186,6 +190,3 @@ export const roleAccessLevels: Record<RoleKey, RoleDefinition> = {
     ]
   },
 };
-
-export type RoleKey = keyof typeof roleAccessLevels;
-export type SubRoleKey = string;

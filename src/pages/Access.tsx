@@ -1,27 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/sonner';
 import { mockDrivers, Driver } from '@/data/mockDrivers';
 import { roleAccessLevels, RoleKey, SubRoleKey } from '@/constants/roleAccessLevels';
 import { LoginFormValues } from '@/schemas/loginFormSchema';
-
-// Import components
-import LoginForm from '@/components/access/LoginForm';
-import RoleInfo from '@/components/access/RoleInfo';
-import EmployeeContent from '@/components/access/EmployeeContent';
-import SupportContent from '@/components/access/SupportContent';
-import ServiceContent from '@/components/access/ServiceContent';
-import ChatContent from '@/components/access/ChatContent';
-import QueryContent from '@/components/access/QueryContent';
-import TrackingContent from '@/components/access/TrackingContent';
-import TechnicalContent from '@/components/access/technical/TechnicalContent';
-import DriverDetail from '@/components/access/DriverDetail';
-import RoleHeader from '@/components/access/RoleHeader';
-import AccessPermissionsBanner from '@/components/access/AccessPermissionsBanner';
-import QuickAccess from '@/components/access/QuickAccess';
+import LoginSection from '@/components/access/LoginSection';
+import AuthenticatedSection from '@/components/access/AuthenticatedSection';
 
 const Access = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -83,57 +69,6 @@ const Access = () => {
     setActiveTab('driverDetail');
   };
 
-  // Check if user has a specific permission
-  const hasPermission = (permissionName: string): boolean => {
-    if (!role || !roleAccessLevels[role]) return false;
-    
-    // If there's a sub-role, check its permissions
-    if (subRole && roleAccessLevels[role].subRoles && roleAccessLevels[role].subRoles[subRole]) {
-      return roleAccessLevels[role].subRoles[subRole].permissions.includes(permissionName);
-    }
-    
-    // Otherwise check the main role permissions
-    return roleAccessLevels[role].permissions.includes(permissionName);
-  };
-
-  // Render role-specific content
-  const renderRoleContent = () => {
-    switch(role) {
-      case 'employee':
-        return <EmployeeContent drivers={mockDrivers} onDriverSelect={handleDriverSelect} />;
-      case 'support':
-        return <SupportContent subRole={subRole} />;
-      case 'service':
-        return <ServiceContent />;
-      case 'chat':
-        return <ChatContent />;
-      case 'query':
-        return <QueryContent />;
-      case 'tracking':
-        return <TrackingContent />;
-      case 'technical':
-        return <TechnicalContent subRole={subRole} />;
-      case 'safety':
-      case 'emergency':
-      case 'callcenter':
-        // For new roles, we could create specific content components
-        return (
-          <div className="text-center p-8">
-            <p>Content for {roleAccessLevels[role].name} role is under development.</p>
-            <Button onClick={handleLogout} className="mt-4">Logout</Button>
-          </div>
-        );
-      default:
-        return (
-          <div className="text-center p-8">
-            <p>Unknown role: {role}</p>
-            <Button onClick={handleLogout} className="mt-4">Logout</Button>
-          </div>
-        );
-    }
-  };
-
-  // Main rendering logic
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -143,64 +78,19 @@ const Access = () => {
           <h1 className="text-4xl font-bold mb-8 text-center">Access RideShare India</h1>
           
           {!isLoggedIn ? (
-            <div className="max-w-md mx-auto">
-              <LoginForm onLogin={handleLogin} />
-              
-              <div className="mt-8">
-                <h2 className="text-2xl font-semibold mb-4">Available Access Roles</h2>
-                <div className="space-y-4">
-                  {Object.keys(roleAccessLevels).map((key) => (
-                    <div key={key} onClick={() => {}}>
-                      <RoleInfo roleKey={key as RoleKey} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-          
-              <div className="mt-8">
-                <h2 className="text-2xl font-semibold mb-4">General Access</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Link to="/" className="no-underline">
-                    <Button variant="outline" className="w-full text-lg justify-start h-14">
-                      🏠 Home Page
-                    </Button>
-                  </Link>
-                  <Link to="/drivers" className="no-underline">
-                    <Button variant="outline" className="w-full text-lg justify-start h-14">
-                      🚗 For Drivers
-                    </Button>
-                  </Link>
-                  <Link to="/riders" className="no-underline">
-                    <Button variant="outline" className="w-full text-lg justify-start h-14">
-                      👤 For Riders
-                    </Button>
-                  </Link>
-                  <Link to="/safety" className="no-underline">
-                    <Button variant="outline" className="w-full text-lg justify-start h-14">
-                      🛡️ Safety
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <LoginSection onLogin={handleLogin} />
           ) : (
-            <div>
-              <RoleHeader 
-                role={role as RoleKey} 
-                username={username}
-                subRole={subRole}
-                onLogout={handleLogout} 
-              />
-              
-              <AccessPermissionsBanner role={role as RoleKey} subRole={subRole} />
-              
-              {/* Add Quick Access component for role-specific applications */}
-              <QuickAccess role={role as RoleKey} />
-              
-              {activeTab === 'general' ? renderRoleContent() : (
-                selectedDriver && <DriverDetail driver={selectedDriver} onBack={() => setActiveTab('general')} />
-              )}
-            </div>
+            <AuthenticatedSection 
+              role={role as RoleKey}
+              username={username}
+              subRole={subRole}
+              onLogout={handleLogout}
+              selectedDriver={selectedDriver}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              drivers={mockDrivers}
+              onDriverSelect={handleDriverSelect}
+            />
           )}
         </div>
       </main>
