@@ -1,5 +1,5 @@
 
-import { MessageSquare, Shield, Users, Car } from 'lucide-react';
+import { MessageSquare, Shield, Users, Car, Search } from 'lucide-react';
 
 // Define access levels for each role
 export const roleAccessLevels = {
@@ -26,6 +26,12 @@ export const roleAccessLevels = {
     description: 'Handle live chat with customers and drivers',
     permissions: ['view_chats', 'respond_to_chats', 'escalate_issues'],
     icon: MessageSquare,
+  },
+  query: {
+    name: 'Query Analyst',
+    description: 'Perform data queries and analysis',
+    permissions: ['run_queries', 'view_reports', 'export_data', 'view_analytics'],
+    icon: Search,
   },
 };
 
