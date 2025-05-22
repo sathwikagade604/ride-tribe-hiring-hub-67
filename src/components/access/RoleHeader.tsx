@@ -12,12 +12,14 @@ interface RoleHeaderProps {
 }
 
 const RoleHeader: React.FC<RoleHeaderProps> = ({ role, username, onLogout }) => {
+  const IconComponent = roleAccessLevels[role].icon;
+  
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="space-y-1">
         <h2 className="text-2xl font-semibold flex items-center">
-          {roleAccessLevels[role].icon}
-          <span className="ml-2">
+          <IconComponent className="h-5 w-5 mr-2" />
+          <span>
             {roleAccessLevels[role].name} Portal
           </span>
         </h2>

@@ -9,6 +9,7 @@ interface RoleInfoProps {
 
 const RoleInfo: React.FC<RoleInfoProps> = ({ roleKey, onClick }) => {
   const role = roleAccessLevels[roleKey];
+  const IconComponent = role.icon;
   
   return (
     <div 
@@ -16,7 +17,7 @@ const RoleInfo: React.FC<RoleInfoProps> = ({ roleKey, onClick }) => {
       onClick={onClick}
     >
       <div className="mt-0.5 bg-primary/10 p-2 rounded-full">
-        {role.icon}
+        <IconComponent className="h-5 w-5" />
       </div>
       <div className="space-y-1">
         <p className="font-semibold">{role.name}</p>
