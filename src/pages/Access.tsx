@@ -10,15 +10,69 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User, Users, Key, Shield, MessageSquare, Car, CheckCircle } from 'lucide-react';
+import { User, Users, Key, Shield, MessageSquare, Car, CheckCircle, Info, Lock } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { toast } from '@/components/ui/sonner';
+
+// Define access levels for each role
+const roleAccessLevels = {
+  employee: {
+    name: 'Employee',
+    description: 'Manage drivers and general operations',
+    permissions: ['view_drivers', 'edit_drivers', 'view_reports'],
+    icon: <Users className="h-5 w-5" />,
+  },
+  support: {
+    name: 'Support',
+    description: 'Handle customer and driver issues',
+    permissions: ['view_tickets', 'resolve_tickets', 'view_drivers'],
+    icon: <Shield className="h-5 w-5" />,
+  },
+  service: {
+    name: 'Vehicle Service',
+    description: 'Manage vehicle maintenance and repairs',
+    permissions: ['view_vehicles', 'schedule_service', 'update_vehicle_status'],
+    icon: <Car className="h-5 w-5" />,
+  },
+  chat: {
+    name: 'Chat Support',
+    description: 'Handle live chat with customers and drivers',
+    permissions: ['view_chats', 'respond_to_chats', 'escalate_issues'],
+    icon: <MessageSquare className="h-5 w-5" />,
+  },
+};
+
+// Login form schema
+const loginFormSchema = z.object({
+  username: z.string().min(3, {
+    message: "Username must be at least 3 characters.",
+  }),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
+  role: z.enum(['employee', 'support', 'service', 'chat']),
+});
 
 const Access = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [role, setRole] = useState('');
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [activeTab, setActiveTab] = useState('general');
+
+  // Initialize the form
+  const form = useForm({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+      role: 'employee',
+    },
+  });
 
   React.useEffect(() => {
     document.title = "Access RideShare India | Quick Links";
@@ -45,25 +99,15 @@ const Access = () => {
   ];
 
   // Handle login
-  const handleLogin = (e) => {
-    e.preventDefault();
-    
+  const onSubmit = (data) => {
     // This is a mock authentication - in a real app you'd validate with a backend
-    if (username && password) {
+    if (data.username && data.password) {
       setIsLoggedIn(true);
+      setRole(data.role);
+      setUsername(data.username);
       
-      // Set role based on username prefix (for demo purposes)
-      if (username.startsWith('emp')) {
-        setRole('employee');
-      } else if (username.startsWith('sup')) {
-        setRole('support');
-      } else if (username.startsWith('srv')) {
-        setRole('service');
-      } else if (username.startsWith('chat')) {
-        setRole('chat');
-      } else {
-        setRole('employee'); // default
-      }
+      // Show success toast
+      toast.success(`Logged in successfully as ${roleAccessLevels[data.role].name}`);
     }
   };
 
@@ -71,16 +115,24 @@ const Access = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername('');
-    setPassword('');
     setRole('');
     setSelectedDriver(null);
     setActiveTab('general');
+    form.reset();
+    
+    toast.info('Logged out successfully');
   };
   
   // Handle driver selection
   const handleDriverSelect = (driver) => {
     setSelectedDriver(driver);
     setActiveTab('driverDetail');
+  };
+
+  // Check if user has a specific permission
+  const hasPermission = (permissionName) => {
+    if (!role || !roleAccessLevels[role]) return false;
+    return roleAccessLevels[role].permissions.includes(permissionName);
   };
 
   // Render role-specific content
@@ -662,6 +714,32 @@ const Access = () => {
     );
   };
 
+  // Render role information card
+  const renderRoleInfo = (roleKey) => {
+    const role = roleAccessLevels[roleKey];
+    return (
+      <div className="flex items-start space-x-4 p-4 rounded-lg border hover:border-primary hover:bg-accent cursor-pointer">
+        <div className="mt-0.5 bg-primary/10 p-2 rounded-full">
+          {role.icon}
+        </div>
+        <div className="space-y-1">
+          <p className="font-semibold">{role.name}</p>
+          <p className="text-sm text-muted-foreground">{role.description}</p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {role.permissions.map((permission, index) => (
+              <span 
+                key={index} 
+                className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full"
+              >
+                {permission.replace(/_/g, ' ')}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Main rendering logic
   return (
     <div className="min-h-screen flex flex-col">
@@ -679,36 +757,79 @@ const Access = () => {
                   <CardDescription>Log in with your credentials to access the company portal</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input 
-                        id="username" 
-                        placeholder="Enter your username" 
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter your username" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                      <div className="text-xs text-gray-500">
-                        Hint: Use prefix <strong>emp</strong> for Employee, <strong>sup</strong> for Support, 
-                        <strong>srv</strong> for Service, <strong>chat</strong> for Chat Support
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <Input 
-                        id="password" 
-                        type="password" 
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
+                      
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="Enter your password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    <Button type="submit" className="w-full">Log In</Button>
-                  </form>
+                      
+                      <FormField
+                        control={form.control}
+                        name="role"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormLabel>Select Access Role</FormLabel>
+                            <FormControl>
+                              <RadioGroup
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                className="space-y-3"
+                              >
+                                {Object.entries(roleAccessLevels).map(([key, role]) => (
+                                  <FormItem key={key} className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                      <RadioGroupItem value={key} />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">{role.name}</FormLabel>
+                                  </FormItem>
+                                ))}
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button type="submit" className="w-full">Log In</Button>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
+              
+              <div className="mt-8">
+                <h2 className="text-2xl font-semibold mb-4">Available Access Roles</h2>
+                <div className="space-y-4">
+                  {Object.entries(roleAccessLevels).map(([key, _]) => (
+                    <div key={key} onClick={() => form.setValue('role', key)}>
+                      {renderRoleInfo(key)}
+                    </div>
+                  ))}
+                </div>
+              </div>
           
               <div className="mt-8">
                 <h2 className="text-2xl font-semibold mb-4">General Access</h2>
@@ -739,10 +860,48 @@ const Access = () => {
           ) : (
             <div>
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">
-                  Welcome to {role.charAt(0).toUpperCase() + role.slice(1)} Portal
-                </h2>
-                <Button onClick={handleLogout} variant="outline">Logout</Button>
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-semibold flex items-center">
+                    {roleAccessLevels[role].icon}
+                    <span className="ml-2">
+                      {roleAccessLevels[role].name} Portal
+                    </span>
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Logged in as {username}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Card className="p-2">
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-medium">
+                        {roleAccessLevels[role].permissions.length} permissions
+                      </span>
+                    </div>
+                  </Card>
+                  <Button onClick={handleLogout} variant="outline">Logout</Button>
+                </div>
+              </div>
+              
+              <div className="mb-6 p-4 bg-muted rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info className="h-5 w-5 text-blue-500" />
+                  <h3 className="font-medium">Access Level: {roleAccessLevels[role].name}</h3>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  You have access to: 
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {roleAccessLevels[role].permissions.map((permission, index) => (
+                      <span 
+                        key={index} 
+                        className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full"
+                      >
+                        {permission.replace(/_/g, ' ')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
               
               {activeTab === 'general' ? renderRoleContent() : renderDriverDetail()}
