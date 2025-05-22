@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { loginFormSchema, LoginFormValues } from '@/schemas/loginFormSchema';
@@ -15,14 +16,27 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
+  const [selectedRole, setSelectedRole] = useState<RoleKey>('employee');
+  
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
       username: '',
       password: '',
       role: 'employee',
+      subRole: '',
     },
   });
+
+  const handleRoleChange = (role: RoleKey) => {
+    setSelectedRole(role);
+    form.setValue('role', role);
+    form.setValue('subRole', ''); // Reset sub-role when role changes
+  };
+
+  const hasSubRoles = selectedRole && 
+    roleAccessLevels[selectedRole] && 
+    'subRoles' in roleAccessLevels[selectedRole];
 
   return (
     <Card>
@@ -69,7 +83,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                   <FormLabel>Select Access Role</FormLabel>
                   <FormControl>
                     <RadioGroup
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => handleRoleChange(value as RoleKey)}
                       defaultValue={field.value}
                       className="space-y-3"
                     >
@@ -87,6 +101,33 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                 </FormItem>
               )}
             />
+            
+            {hasSubRoles && (
+              <FormField
+                control={form.control}
+                name="subRole"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select Team/Specialization</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a team" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(roleAccessLevels[selectedRole].subRoles || {}).map(([key, subRole]) => (
+                          <SelectItem key={key} value={key}>
+                            {subRole.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             
             <Button type="submit" className="w-full">Log In</Button>
           </form>

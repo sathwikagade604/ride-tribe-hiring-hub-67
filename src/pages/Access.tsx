@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/sonner';
 import { mockDrivers, Driver } from '@/data/mockDrivers';
-import { roleAccessLevels, RoleKey } from '@/constants/roleAccessLevels';
+import { roleAccessLevels, RoleKey, SubRoleKey } from '@/constants/roleAccessLevels';
 import { LoginFormValues } from '@/schemas/loginFormSchema';
 
 // Import components
@@ -26,6 +26,7 @@ import QuickAccess from '@/components/access/QuickAccess';
 const Access = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [role, setRole] = useState<RoleKey | ''>('');
+  const [subRole, setSubRole] = useState<SubRoleKey | ''>('');
   const [username, setUsername] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [activeTab, setActiveTab] = useState('general');
@@ -51,10 +52,16 @@ const Access = () => {
     if (data.username && data.password) {
       setIsLoggedIn(true);
       setRole(data.role as RoleKey);
+      setSubRole(data.subRole || '');
       setUsername(data.username);
       
       // Show success toast
-      toast.success(`Logged in successfully as ${roleAccessLevels[data.role].name}`);
+      const roleDisplay = roleAccessLevels[data.role].name;
+      const subRoleDisplay = data.subRole && roleAccessLevels[data.role].subRoles?.[data.subRole]?.name 
+        ? ` (${roleAccessLevels[data.role].subRoles[data.subRole].name})`
+        : '';
+        
+      toast.success(`Logged in successfully as ${roleDisplay}${subRoleDisplay}`);
     }
   };
 
@@ -63,6 +70,7 @@ const Access = () => {
     setIsLoggedIn(false);
     setUsername('');
     setRole('');
+    setSubRole('');
     setSelectedDriver(null);
     setActiveTab('general');
     
@@ -78,6 +86,13 @@ const Access = () => {
   // Check if user has a specific permission
   const hasPermission = (permissionName: string): boolean => {
     if (!role || !roleAccessLevels[role]) return false;
+    
+    // If there's a sub-role, check its permissions
+    if (subRole && roleAccessLevels[role].subRoles && roleAccessLevels[role].subRoles[subRole]) {
+      return roleAccessLevels[role].subRoles[subRole].permissions.includes(permissionName);
+    }
+    
+    // Otherwise check the main role permissions
     return roleAccessLevels[role].permissions.includes(permissionName);
   };
 
@@ -87,7 +102,7 @@ const Access = () => {
       case 'employee':
         return <EmployeeContent drivers={mockDrivers} onDriverSelect={handleDriverSelect} />;
       case 'support':
-        return <SupportContent />;
+        return <SupportContent subRole={subRole} />;
       case 'service':
         return <ServiceContent />;
       case 'chat':
@@ -97,7 +112,17 @@ const Access = () => {
       case 'tracking':
         return <TrackingContent />;
       case 'technical':
-        return <TechnicalContent />;
+        return <TechnicalContent subRole={subRole} />;
+      case 'safety':
+      case 'emergency':
+      case 'callcenter':
+        // For new roles, we could create specific content components
+        return (
+          <div className="text-center p-8">
+            <p>Content for {roleAccessLevels[role].name} role is under development.</p>
+            <Button onClick={handleLogout} className="mt-4">Logout</Button>
+          </div>
+        );
       default:
         return (
           <div className="text-center p-8">
@@ -162,11 +187,12 @@ const Access = () => {
             <div>
               <RoleHeader 
                 role={role as RoleKey} 
-                username={username} 
+                username={username}
+                subRole={subRole}
                 onLogout={handleLogout} 
               />
               
-              <AccessPermissionsBanner role={role as RoleKey} />
+              <AccessPermissionsBanner role={role as RoleKey} subRole={subRole} />
               
               {/* Add Quick Access component for role-specific applications */}
               <QuickAccess role={role as RoleKey} />

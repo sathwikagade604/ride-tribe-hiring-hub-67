@@ -1,4 +1,5 @@
-import { MessageSquare, Shield, Users, Car, Search, MapPin, Mail, Wrench } from 'lucide-react';
+
+import { MessageSquare, Shield, Users, Car, Search, MapPin, Mail, Wrench, AlertTriangle, HeartPulse, PhoneCall } from 'lucide-react';
 
 // Define access levels for each role
 export const roleAccessLevels = {
@@ -24,7 +25,34 @@ export const roleAccessLevels = {
       { name: 'Customer Support', description: 'Handle customer inquiries', path: '/customer-support' },
       { name: 'Email Support', description: 'Manage email-based customer issues', path: '/email-support' },
       { name: 'Email Templates', description: 'Access standardized email templates', path: '/email-templates' }
-    ]
+    ],
+    subRoles: {
+      general: {
+        name: 'General Support',
+        description: 'Handle general customer inquiries and issues',
+        permissions: ['view_tickets', 'resolve_tickets', 'view_drivers']
+      },
+      email: {
+        name: 'Email Support',
+        description: 'Manage email-based customer communications',
+        permissions: ['manage_emails', 'view_tickets']
+      },
+      escalation: {
+        name: 'Escalation Team',
+        description: 'Handle escalated and complex customer issues',
+        permissions: ['view_tickets', 'resolve_tickets', 'view_drivers', 'escalate_issues']
+      },
+      safety: {
+        name: 'Safety Response',
+        description: 'Handle safety and emergency situations',
+        permissions: ['view_tickets', 'resolve_tickets', 'view_drivers', 'manage_emergencies']
+      },
+      sos: {
+        name: 'SOS Team',
+        description: 'Respond to emergency SOS signals and situations',
+        permissions: ['view_tickets', 'view_drivers', 'manage_emergencies', 'contact_authorities']
+      }
+    }
   },
   service: {
     name: 'Vehicle Service',
@@ -81,14 +109,71 @@ export const roleAccessLevels = {
       { name: 'App Troubleshooting', description: 'Help users with app-related problems', path: '/app-troubleshooting' },
       { name: 'Device Issues', description: 'Resolve hardware and device problems', path: '/device-issues' },
       { name: 'Knowledge Base', description: 'Access technical documentation', path: '/technical-knowledge-base' }
+    ],
+    subRoles: {
+      app: {
+        name: 'App Technical Support',
+        description: 'Resolve application-related technical issues',
+        permissions: ['view_tickets', 'resolve_tickets', 'view_technical_issues']
+      },
+      device: {
+        name: 'Device Technical Support',
+        description: 'Resolve hardware and device-related issues',
+        permissions: ['view_tickets', 'resolve_tickets', 'view_technical_issues']
+      },
+      system: {
+        name: 'System Administrator',
+        description: 'Manage system-level technical issues',
+        permissions: ['view_tickets', 'resolve_tickets', 'view_technical_issues', 'access_system_logs']
+      }
+    }
+  },
+  safety: {
+    name: 'Safety Team',
+    description: 'Monitor and respond to safety incidents',
+    permissions: ['view_safety_reports', 'manage_emergencies', 'contact_authorities', 'view_drivers', 'view_riders'],
+    icon: AlertTriangle,
+    applications: [
+      { name: 'Safety Dashboard', description: 'Monitor safety incidents', path: '/safety-dashboard' },
+      { name: 'Emergency Response', description: 'Manage emergency responses', path: '/emergency-response' },
+      { name: 'Incident Reports', description: 'View and manage incident reports', path: '/incident-reports' }
+    ]
+  },
+  emergency: {
+    name: 'Emergency Response',
+    description: 'Handle SOS and emergency situations',
+    permissions: ['view_emergencies', 'manage_emergencies', 'contact_authorities', 'view_drivers', 'view_riders'],
+    icon: HeartPulse,
+    applications: [
+      { name: 'SOS Console', description: 'Monitor and respond to SOS signals', path: '/sos-console' },
+      { name: 'Emergency Contacts', description: 'Access emergency contacts', path: '/emergency-contacts' },
+      { name: 'Authority Coordination', description: 'Coordinate with authorities', path: '/authority-coordination' }
+    ]
+  },
+  callcenter: {
+    name: 'Call Center',
+    description: 'Handle customer phone inquiries',
+    permissions: ['receive_calls', 'make_calls', 'view_tickets', 'create_tickets', 'view_drivers', 'view_riders'],
+    icon: PhoneCall,
+    applications: [
+      { name: 'Call Console', description: 'Manage incoming and outgoing calls', path: '/call-console' },
+      { name: 'Customer Lookup', description: 'Search for customer information', path: '/customer-lookup' },
+      { name: 'Call History', description: 'View call history and logs', path: '/call-history' }
     ]
   },
 };
 
 export type RoleKey = keyof typeof roleAccessLevels;
+export type SubRoleKey = string;
 
 export interface RoleApplication {
   name: string;
   description: string;
   path: string;
+}
+
+export interface SubRole {
+  name: string;
+  description: string;
+  permissions: string[];
 }

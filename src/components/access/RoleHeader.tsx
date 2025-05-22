@@ -8,11 +8,14 @@ import { roleAccessLevels, RoleKey } from '@/constants/roleAccessLevels';
 interface RoleHeaderProps {
   role: RoleKey;
   username: string;
+  subRole?: string;
   onLogout: () => void;
 }
 
-const RoleHeader: React.FC<RoleHeaderProps> = ({ role, username, onLogout }) => {
+const RoleHeader: React.FC<RoleHeaderProps> = ({ role, username, subRole = '', onLogout }) => {
   const IconComponent = roleAccessLevels[role].icon;
+  const hasSubRole = subRole && roleAccessLevels[role].subRoles && roleAccessLevels[role].subRoles[subRole];
+  const subRoleData = hasSubRole ? roleAccessLevels[role].subRoles[subRole] : null;
   
   return (
     <div className="flex justify-between items-center mb-6">
@@ -21,6 +24,11 @@ const RoleHeader: React.FC<RoleHeaderProps> = ({ role, username, onLogout }) => 
           <IconComponent className="h-5 w-5 mr-2" />
           <span>
             {roleAccessLevels[role].name} Portal
+            {subRoleData && (
+              <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full ml-2">
+                {subRoleData.name}
+              </span>
+            )}
           </span>
         </h2>
         <p className="text-muted-foreground">
@@ -32,7 +40,9 @@ const RoleHeader: React.FC<RoleHeaderProps> = ({ role, username, onLogout }) => 
           <div className="flex items-center gap-2">
             <Lock className="h-4 w-4 text-amber-500" />
             <span className="text-sm font-medium">
-              {roleAccessLevels[role].permissions.length} permissions
+              {hasSubRole 
+                ? `${subRoleData.permissions.length} permissions` 
+                : `${roleAccessLevels[role].permissions.length} permissions`}
             </span>
           </div>
         </Card>
