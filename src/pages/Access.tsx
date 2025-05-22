@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -18,7 +17,7 @@ import ServiceContent from '@/components/access/ServiceContent';
 import ChatContent from '@/components/access/ChatContent';
 import QueryContent from '@/components/access/QueryContent';
 import TrackingContent from '@/components/access/TrackingContent';
-import TechnicalContent from '@/components/access/TechnicalContent';
+import TechnicalContent from '@/components/access/technical/TechnicalContent';
 import DriverDetail from '@/components/access/DriverDetail';
 import RoleHeader from '@/components/access/RoleHeader';
 import AccessPermissionsBanner from '@/components/access/AccessPermissionsBanner';
