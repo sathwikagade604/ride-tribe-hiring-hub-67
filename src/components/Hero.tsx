@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { IndianRupee, MapPin } from 'lucide-react';
+import { formatINR } from '@/utils/currency';
 
 const Hero = () => {
   return (
@@ -8,10 +10,10 @@ const Hero = () => {
       <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
         <div className="md:w-1/2 md:pr-8 mb-8 md:mb-0 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold text-brand-dark mb-4">
-            The Next Generation of <span className="text-brand-primary">Ride Sharing</span>
+            The Next Generation of <span className="text-brand-primary">Ride Sharing</span> in India
           </h1>
           <p className="text-lg text-gray-700 mb-8">
-            Connecting passengers to drivers with benefits that matter.
+            Connecting passengers to drivers across India with benefits that matter.
             Better earnings for drivers, better experiences for everyone.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -39,21 +41,30 @@ const Hero = () => {
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <div className="text-sm">Current location</div>
+                  <div className="text-sm flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    <span>Current location</span>
+                  </div>
                 </div>
                 <div className="w-0.5 h-6 bg-gray-300 ml-1"></div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-brand-primary"></div>
-                  <div className="text-sm">Destination</div>
+                  <div className="text-sm flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    <span>Destination</span>
+                  </div>
                 </div>
               </div>
               <div className="mt-4 bg-brand-light rounded-lg p-3">
                 <div className="flex justify-between items-center">
                   <div>
                     <div className="text-sm font-medium">Standard Ride</div>
-                    <div className="text-xs text-gray-500">Toyota Camry • 3 min away</div>
+                    <div className="text-xs text-gray-500">Toyota Innova • 3 min away</div>
                   </div>
-                  <div className="font-medium">$12.50</div>
+                  <div className="font-medium flex items-center">
+                    <IndianRupee className="w-3 h-3 mr-1" />
+                    <span>250</span>
+                  </div>
                 </div>
               </div>
             </div>
