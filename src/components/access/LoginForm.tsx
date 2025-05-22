@@ -34,9 +34,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     form.setValue('subRole', ''); // Reset sub-role when role changes
   };
 
-  const hasSubRoles = selectedRole && 
-    roleAccessLevels[selectedRole] && 
-    'subRoles' in roleAccessLevels[selectedRole];
+  const roleData = roleAccessLevels[selectedRole];
+  const hasSubRoles = roleData && roleData.subRoles && Object.keys(roleData.subRoles).length > 0;
 
   return (
     <Card>
@@ -116,7 +115,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.entries(roleAccessLevels[selectedRole].subRoles || {}).map(([key, subRole]) => (
+                        {Object.entries(roleData.subRoles || {}).map(([key, subRole]) => (
                           <SelectItem key={key} value={key}>
                             {subRole.name}
                           </SelectItem>

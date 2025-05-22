@@ -6,7 +6,11 @@ import SystemDiagnostics from './SystemDiagnostics';
 import KnowledgeBase from './KnowledgeBase';
 import SupportStats from './SupportStats';
 
-const TechnicalContent: React.FC = () => {
+interface TechnicalContentProps {
+  subRole?: string;
+}
+
+const TechnicalContent: React.FC<TechnicalContentProps> = ({ subRole }) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Technical Support Dashboard</h2>

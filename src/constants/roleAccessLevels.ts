@@ -1,8 +1,32 @@
 
 import { MessageSquare, Shield, Users, Car, Search, MapPin, Mail, Wrench, AlertTriangle, HeartPulse, PhoneCall } from 'lucide-react';
 
+// Define interface for sub-roles
+export interface SubRole {
+  name: string;
+  description: string;
+  permissions: string[];
+}
+
+// Define interface for applications
+export interface RoleApplication {
+  name: string;
+  description: string;
+  path: string;
+}
+
+// Define the interface for the role structure
+export interface RoleDefinition {
+  name: string;
+  description: string;
+  permissions: string[];
+  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  applications: RoleApplication[];
+  subRoles?: Record<string, SubRole>;
+}
+
 // Define access levels for each role
-export const roleAccessLevels = {
+export const roleAccessLevels: Record<RoleKey, RoleDefinition> = {
   employee: {
     name: 'Employee',
     description: 'Manage drivers and general operations',
@@ -165,15 +189,3 @@ export const roleAccessLevels = {
 
 export type RoleKey = keyof typeof roleAccessLevels;
 export type SubRoleKey = string;
-
-export interface RoleApplication {
-  name: string;
-  description: string;
-  path: string;
-}
-
-export interface SubRole {
-  name: string;
-  description: string;
-  permissions: string[];
-}
