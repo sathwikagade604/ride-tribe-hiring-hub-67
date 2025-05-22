@@ -17,6 +17,7 @@ import SupportContent from '@/components/access/SupportContent';
 import ServiceContent from '@/components/access/ServiceContent';
 import ChatContent from '@/components/access/ChatContent';
 import QueryContent from '@/components/access/QueryContent';
+import TrackingContent from '@/components/access/TrackingContent';
 import DriverDetail from '@/components/access/DriverDetail';
 import RoleHeader from '@/components/access/RoleHeader';
 import AccessPermissionsBanner from '@/components/access/AccessPermissionsBanner';
@@ -92,6 +93,8 @@ const Access = () => {
         return <ChatContent />;
       case 'query':
         return <QueryContent />;
+      case 'tracking':
+        return <TrackingContent />;
       default:
         return (
           <div className="text-center p-8">

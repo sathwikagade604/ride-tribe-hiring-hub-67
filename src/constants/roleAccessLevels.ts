@@ -1,5 +1,5 @@
 
-import { MessageSquare, Shield, Users, Car, Search } from 'lucide-react';
+import { MessageSquare, Shield, Users, Car, Search, MapPin } from 'lucide-react';
 
 // Define access levels for each role
 export const roleAccessLevels = {
@@ -32,6 +32,12 @@ export const roleAccessLevels = {
     description: 'Perform data queries and analysis',
     permissions: ['run_queries', 'view_reports', 'export_data', 'view_analytics'],
     icon: Search,
+  },
+  tracking: {
+    name: 'Tracking Manager',
+    description: 'Monitor and track rides and riders in real-time',
+    permissions: ['view_live_tracking', 'track_rides', 'track_riders', 'view_ride_history'],
+    icon: MapPin,
   },
 };
 
