@@ -1,5 +1,5 @@
 
-import { MessageSquare, Shield, Users, Car, Search, MapPin } from 'lucide-react';
+import { MessageSquare, Shield, Users, Car, Search, MapPin, Mail } from 'lucide-react';
 
 // Define access levels for each role
 export const roleAccessLevels = {
@@ -17,12 +17,14 @@ export const roleAccessLevels = {
   support: {
     name: 'Support',
     description: 'Handle customer and driver issues',
-    permissions: ['view_tickets', 'resolve_tickets', 'view_drivers'],
+    permissions: ['view_tickets', 'resolve_tickets', 'view_drivers', 'manage_emails'],
     icon: Shield,
     applications: [
       { name: 'Ticket Management', description: 'View and resolve support tickets', path: '/tickets' },
       { name: 'Driver Lookup', description: 'Quick access to driver information', path: '/driver-lookup' },
-      { name: 'Customer Support', description: 'Handle customer inquiries', path: '/customer-support' }
+      { name: 'Customer Support', description: 'Handle customer inquiries', path: '/customer-support' },
+      { name: 'Email Support', description: 'Manage email-based customer issues', path: '/email-support' },
+      { name: 'Email Templates', description: 'Access standardized email templates', path: '/email-templates' }
     ]
   },
   service: {
