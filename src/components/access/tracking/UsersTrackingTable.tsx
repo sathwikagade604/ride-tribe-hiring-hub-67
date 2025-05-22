@@ -9,8 +9,10 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MapPin, Car, User } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import StatusBadge from './StatusBadge';
+import UserTypeIcon from './UserTypeIcon';
 
 interface TrackingUser {
   id: string;
@@ -52,23 +54,14 @@ const UsersTrackingTable: React.FC<UsersTrackingTableProps> = ({ users }) => {
               <TableCell>{user.id}</TableCell>
               <TableCell>{user.name}</TableCell>
               <TableCell>
-                {user.type === 'Driver' ? (
-                  <span className="flex items-center">
-                    <Car className="h-3 w-3 mr-1" /> Driver
-                  </span>
-                ) : (
-                  <span className="flex items-center">
-                    <User className="h-3 w-3 mr-1" /> Rider
-                  </span>
-                )}
+                <UserTypeIcon type={user.type} />
               </TableCell>
               <TableCell>{user.currentLocation}</TableCell>
               <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  user.status === 'On Trip' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {user.status}
-                </span>
+                <StatusBadge 
+                  status={user.status} 
+                  variant={user.status === 'On Trip' ? 'green' : 'gray'}
+                />
               </TableCell>
               <TableCell>
                 {user.type === 'Driver' ? 

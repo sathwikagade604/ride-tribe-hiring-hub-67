@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import StatusBadge from './StatusBadge';
 
 interface Ride {
   id: string;
@@ -56,11 +57,10 @@ const ActiveRidesTable: React.FC<ActiveRidesTableProps> = ({ rides }) => {
               <TableCell>{ride.pickup}</TableCell>
               <TableCell>{ride.destination}</TableCell>
               <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  ride.status === 'In Progress' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {ride.status}
-                </span>
+                <StatusBadge 
+                  status={ride.status} 
+                  variant={ride.status === 'In Progress' ? 'green' : 'blue'} 
+                />
               </TableCell>
               <TableCell>{ride.estimatedTime}</TableCell>
               <TableCell>

@@ -8,6 +8,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import StatusBadge from './StatusBadge';
 
 interface HistoricalRide {
   id: string;
@@ -50,11 +51,10 @@ const RideHistoryTable: React.FC<RideHistoryTableProps> = ({ rides }) => {
               <TableCell>{ride.pickup}</TableCell>
               <TableCell>{ride.destination}</TableCell>
               <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  ride.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {ride.status}
-                </span>
+                <StatusBadge 
+                  status={ride.status} 
+                  variant={ride.status === 'Completed' ? 'green' : 'red'}
+                />
               </TableCell>
               <TableCell>{ride.date}</TableCell>
               <TableCell>{ride.duration}</TableCell>
