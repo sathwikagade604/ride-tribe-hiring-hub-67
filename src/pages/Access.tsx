@@ -17,6 +17,7 @@ const Access = () => {
     selectedDriver,
     activeTab,
     handleLogin,
+    handleSignup,
     handleLogout,
     handleDriverSelect,
     setActiveTab
@@ -30,7 +31,7 @@ const Access = () => {
       />
       
       {!isLoggedIn ? (
-        <LoginSection onLogin={handleLogin} />
+        <LoginSection onLogin={handleLogin} onSignup={handleSignup} />
       ) : (
         <AuthenticatedSection 
           role={role as RoleKey}
