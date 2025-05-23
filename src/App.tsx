@@ -10,6 +10,8 @@ import DriversPage from "./pages/DriversPage";
 import RidersPage from "./pages/RidersPage";
 import SafetyPage from "./pages/SafetyPage";
 import Access from "./pages/Access";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 
 // Create a client
@@ -28,6 +30,8 @@ const App: React.FC = () => {
             <Route path="/riders" element={<RidersPage />} />
             <Route path="/safety" element={<SafetyPage />} />
             <Route path="/access" element={<Access />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

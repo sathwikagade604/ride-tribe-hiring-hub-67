@@ -23,8 +23,12 @@ const Navbar = () => {
         </div>
         
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="outline" className="btn-outline">Log In</Button>
-          <Button className="btn-primary">Sign Up</Button>
+          <Link to="/login">
+            <Button variant="outline" className="btn-outline">Log In</Button>
+          </Link>
+          <Link to="/signup">
+            <Button className="btn-primary">Sign Up</Button>
+          </Link>
         </div>
         
         <button 
@@ -45,8 +49,12 @@ const Navbar = () => {
             <Link to="/safety" className="nav-link" onClick={() => setIsMenuOpen(false)}>Safety</Link>
             <Link to="/access" className="nav-link" onClick={() => setIsMenuOpen(false)}>Quick Access</Link>
             <div className="flex gap-2 mt-2">
-              <Button variant="outline" className="btn-outline flex-1">Log In</Button>
-              <Button className="btn-primary flex-1">Sign Up</Button>
+              <Link to="/login" className="flex-1" onClick={() => setIsMenuOpen(false)}>
+                <Button variant="outline" className="btn-outline w-full">Log In</Button>
+              </Link>
+              <Link to="/signup" className="flex-1" onClick={() => setIsMenuOpen(false)}>
+                <Button className="btn-primary w-full">Sign Up</Button>
+              </Link>
             </div>
           </div>
         </div>
