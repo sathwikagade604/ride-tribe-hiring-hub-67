@@ -15,13 +15,13 @@ describe('PageTitle', () => {
     const removeChildMock = vi.fn();
     
     // Mock document properties
-    const originalDocumentTitle = document.title;
+    let mockDocumentTitle = '';
     const originalHead = document.head;
     
     Object.defineProperty(document, 'title', {
       configurable: true,
-      get: () => originalDocumentTitle,
-      set: vi.fn()
+      get: () => mockDocumentTitle,
+      set: (value) => { mockDocumentTitle = value; }
     });
     
     Object.defineProperty(document, 'head', {
@@ -34,7 +34,7 @@ describe('PageTitle', () => {
     
     const { unmount } = render(<PageTitle title="Test Title" description="Test Description" />);
     
-    expect(document.title).toBe("Test Title");
+    expect(mockDocumentTitle).toBe("Test Title");
     expect(appendChildMock).toHaveBeenCalled();
     
     unmount();
@@ -44,8 +44,8 @@ describe('PageTitle', () => {
     // Restore original document properties
     Object.defineProperty(document, 'title', {
       configurable: true,
-      get: () => originalDocumentTitle,
-      set: (v) => { originalDocumentTitle = v; }
+      get: () => '',
+      set: () => {}
     });
     
     Object.defineProperty(document, 'head', {
