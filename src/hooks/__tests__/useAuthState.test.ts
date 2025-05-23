@@ -1,5 +1,6 @@
 
 import { renderHook, act } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { useAuthState } from '../useAuthState';
 import { describe, it, expect, vi } from 'vitest';
 import { toast } from '@/components/ui/sonner';
