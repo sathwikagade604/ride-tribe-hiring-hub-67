@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/components/ui/sonner';
 import PageLayout from '@/layouts/PageLayout';
 
-// Login form schema
+// Enhanced login form schema
 const loginFormSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
@@ -19,6 +20,7 @@ const loginFormSchema = z.object({
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
   }),
+  userType: z.enum(['rider', 'driver']),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -31,22 +33,27 @@ const Login = () => {
     defaultValues: {
       email: '',
       password: '',
+      userType: 'rider',
     },
   });
 
   const onSubmit = (data: LoginFormValues) => {
-    // Mock authentication - in real app, this would call an API
     console.log('Login attempt with:', data);
     
     // Store auth status in localStorage for persistence
     localStorage.setItem('isAuthenticated', 'true');
     localStorage.setItem('username', data.email.split('@')[0]);
+    localStorage.setItem('userType', data.userType);
     
-    toast.success('Login successful! Redirecting to dashboard...');
+    toast.success(`Login successful as ${data.userType}! Redirecting...`);
     
-    // Redirect to dashboard
+    // Redirect based on user type
     setTimeout(() => {
-      navigate('/dashboard');
+      if (data.userType === 'driver') {
+        navigate('/driver-app');
+      } else {
+        navigate('/dashboard');
+      }
     }, 1000);
   };
 
@@ -57,7 +64,7 @@ const Login = () => {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
             <CardDescription className="text-center">
-              Enter your email and password to login to your account
+              Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -90,6 +97,41 @@ const Login = () => {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="userType"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Login as:</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="rider" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Rider - Book rides and travel
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="driver" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Driver - Drive and earn money
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <Button type="submit" className="w-full">Login</Button>
               </form>
@@ -106,6 +148,7 @@ const Login = () => {
               <p className="text-sm font-medium mb-2">Demo Credentials:</p>
               <p className="text-xs text-muted-foreground">Email: demo@example.com</p>
               <p className="text-xs text-muted-foreground">Password: demo123</p>
+              <p className="text-xs text-muted-foreground">Choose Rider or Driver to test different features</p>
             </div>
           </CardContent>
         </Card>

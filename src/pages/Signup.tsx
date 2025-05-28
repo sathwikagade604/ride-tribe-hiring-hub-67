@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { toast } from '@/components/ui/sonner';
 import PageLayout from '@/layouts/PageLayout';
 
-// Signup form schema
+// Enhanced signup form schema
 const signupFormSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
@@ -20,31 +20,54 @@ const signupFormSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
+  phone: z.string().min(10, {
+    message: "Phone number must be at least 10 digits.",
+  }),
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
   }),
+  confirmPassword: z.string(),
   userType: z.enum(['rider', 'driver']),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type SignupFormValues = z.infer<typeof signupFormSchema>;
 
 const Signup = () => {
+  const navigate = useNavigate();
+  
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupFormSchema),
     defaultValues: {
       name: '',
       email: '',
+      phone: '',
       password: '',
+      confirmPassword: '',
       userType: 'rider',
     },
   });
 
   const onSubmit = (data: SignupFormValues) => {
-    // This is where you would normally connect to your authentication service
     console.log('Signup attempt with:', data);
     
-    // For now, just show a success toast
-    toast.success('Account created successfully!');
+    // Store auth status in localStorage for persistence
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('username', data.name);
+    localStorage.setItem('userType', data.userType);
+    
+    toast.success(`Account created successfully as ${data.userType}! Redirecting...`);
+    
+    // Redirect based on user type
+    setTimeout(() => {
+      if (data.userType === 'driver') {
+        navigate('/driver-app');
+      } else {
+        navigate('/dashboard');
+      }
+    }, 1000);
   };
 
   return (
@@ -54,7 +77,7 @@ const Signup = () => {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">Sign Up</CardTitle>
             <CardDescription className="text-center">
-              Create a new account as a rider or driver
+              Create your account to get started
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -87,6 +110,20 @@ const Signup = () => {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your phone number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <FormField
                   control={form.control}
@@ -96,6 +133,20 @@ const Signup = () => {
                       <FormLabel>Password</FormLabel>
                       <FormControl>
                         <Input type="password" placeholder="Create a password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Confirm your password" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -119,7 +170,7 @@ const Signup = () => {
                               <RadioGroupItem value="rider" />
                             </FormControl>
                             <FormLabel className="font-normal">
-                              Sign up as a Rider
+                              Sign up as a Rider - Book rides
                             </FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-3 space-y-0">
@@ -127,7 +178,7 @@ const Signup = () => {
                               <RadioGroupItem value="driver" />
                             </FormControl>
                             <FormLabel className="font-normal">
-                              Sign up as a Driver
+                              Sign up as a Driver - Drive and earn
                             </FormLabel>
                           </FormItem>
                         </RadioGroup>

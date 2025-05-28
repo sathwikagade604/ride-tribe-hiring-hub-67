@@ -3,10 +3,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Car, Clock, Star, CreditCard, Shield, Phone } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MapPin, Car, Clock, Star, CreditCard, Shield, Phone, Users } from 'lucide-react';
 import PageLayout from '@/layouts/PageLayout';
-import RideBooking from '@/components/rides/RideBooking';
+import AdvancedRideBooking from '@/components/rides/AdvancedRideBooking';
 import RideHistory from '@/components/rides/RideHistory';
+import RideTracking from '@/components/rides/RideTracking';
 import { useAuthState } from '@/hooks/useAuthState';
 
 const Dashboard = () => {
@@ -33,7 +35,12 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold">Welcome back, {username}!</h1>
             <p className="text-muted-foreground">Book your ride or manage your trips</p>
           </div>
-          <Button onClick={handleLogout} variant="outline">Logout</Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/driver-app')} variant="outline">
+              Driver Portal
+            </Button>
+            <Button onClick={handleLogout} variant="outline">Logout</Button>
+          </div>
         </div>
 
         {/* Quick Actions */}
@@ -71,56 +78,101 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Ride Booking */}
-          <div className="lg:col-span-2">
-            <RideBooking />
-          </div>
-          
-          {/* Sidebar */}
-          <div className="space-y-4">
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="book" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="book">Book Ride</TabsTrigger>
+            <TabsTrigger value="track">Track Ride</TabsTrigger>
+            <TabsTrigger value="history">Ride History</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="book" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Advanced Ride Booking */}
+              <div className="lg:col-span-2">
+                <AdvancedRideBooking />
+              </div>
+              
+              {/* Sidebar */}
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Star className="h-5 w-5" />
+                      Your Rating
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold">4.8</div>
+                      <div className="flex justify-center gap-1 mt-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2">Based on 127 rides</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Phone className="h-5 w-5" />
+                      Emergency
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="destructive" className="w-full">
+                      SOS Emergency
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                      Emergency contacts will be notified
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Refer & Earn
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm mb-3">Invite friends and earn ₹100 for each successful referral</p>
+                    <Button variant="outline" className="w-full">
+                      Share Referral Code
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="track" className="space-y-6">
+            <RideTracking rideId="12345" status="driver_arriving" />
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-6">
+            <RideHistory />
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  Your Rating
-                </CardTitle>
+                <CardTitle>Profile Settings</CardTitle>
+                <CardDescription>Manage your account and preferences</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center">
-                  <div className="text-3xl font-bold">4.8</div>
-                  <div className="flex justify-center gap-1 mt-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">Based on 127 rides</p>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Profile management features coming soon...</p>
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Phone className="h-5 w-5" />
-                  Emergency
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button variant="destructive" className="w-full">
-                  SOS Emergency
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Emergency contacts will be notified
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Recent Rides */}
-        <RideHistory />
+          </TabsContent>
+        </Tabs>
       </div>
     </PageLayout>
   );
