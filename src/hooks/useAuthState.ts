@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Driver } from '@/data/mockDrivers';
 import { RoleKey, SubRoleKey } from '@/constants/roleAccessLevels';
 import { LoginFormValues } from '@/schemas/loginFormSchema';
@@ -26,9 +26,33 @@ export function useAuthState() {
     activeTab: 'general'
   });
 
+  // Check localStorage on mount for persistence
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const storedUsername = localStorage.getItem('username') || '';
+    const storedRole = localStorage.getItem('userRole') as RoleKey || '';
+    const storedSubRole = localStorage.getItem('userSubRole') || '';
+
+    if (isAuthenticated && storedUsername) {
+      setAuthState(prev => ({
+        ...prev,
+        isLoggedIn: true,
+        username: storedUsername,
+        role: storedRole,
+        subRole: storedSubRole
+      }));
+    }
+  }, []);
+
   // Handle login
   const handleLogin = (data: LoginFormValues) => {
     if (data.username && data.password) {
+      // Store in localStorage for persistence
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('userRole', data.role);
+      localStorage.setItem('userSubRole', data.subRole || '');
+
       setAuthState({
         ...authState,
         isLoggedIn: true,
@@ -50,6 +74,12 @@ export function useAuthState() {
   // Handle signup
   const handleSignup = (data: SignupFormValues) => {
     if (data.username && data.email && data.password) {
+      // Store in localStorage for persistence
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('userRole', data.role);
+      localStorage.setItem('userSubRole', data.subRole || '');
+
       setAuthState({
         ...authState,
         isLoggedIn: true,
@@ -70,6 +100,12 @@ export function useAuthState() {
 
   // Handle logout
   const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('username');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userSubRole');
+
     setAuthState({
       isLoggedIn: false,
       role: '',

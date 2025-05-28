@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,8 @@ const loginFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 const Login = () => {
+  const navigate = useNavigate();
+  
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -33,11 +35,19 @@ const Login = () => {
   });
 
   const onSubmit = (data: LoginFormValues) => {
-    // This is where you would normally connect to your authentication service
+    // Mock authentication - in real app, this would call an API
     console.log('Login attempt with:', data);
     
-    // For now, just show a toast message
-    toast.success('Login successful!');
+    // Store auth status in localStorage for persistence
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('username', data.email.split('@')[0]);
+    
+    toast.success('Login successful! Redirecting to dashboard...');
+    
+    // Redirect to dashboard
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 1000);
   };
 
   return (
@@ -90,6 +100,12 @@ const Login = () => {
               <Link to="/signup" className="text-blue-600 hover:underline">
                 Sign up
               </Link>
+            </div>
+            
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <p className="text-sm font-medium mb-2">Demo Credentials:</p>
+              <p className="text-xs text-muted-foreground">Email: demo@example.com</p>
+              <p className="text-xs text-muted-foreground">Password: demo123</p>
             </div>
           </CardContent>
         </Card>
