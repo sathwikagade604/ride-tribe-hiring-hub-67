@@ -2,10 +2,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import PageLayout from '../../layouts/PageLayout';
+import { BrowserRouter } from 'react-router-dom';
+import PageLayout from '../PageLayout';
 import { describe, it, expect, vi } from 'vitest';
 
-// Mock child components
+// Mock the Navbar and Footer components
 vi.mock('@/components/Navbar', () => ({
   default: () => <div data-testid="navbar">Mock Navbar</div>
 }));
@@ -15,16 +16,18 @@ vi.mock('@/components/Footer', () => ({
 }));
 
 describe('PageLayout', () => {
-  it('renders navbar, content and footer', () => {
+  it('renders navbar, main content, and footer', () => {
     render(
-      <PageLayout>
-        <div data-testid="content">Test Content</div>
-      </PageLayout>
+      <BrowserRouter>
+        <PageLayout>
+          <div data-testid="test-content">Test Content</div>
+        </PageLayout>
+      </BrowserRouter>
     );
-    
+
     expect(screen.getByTestId('navbar')).toBeInTheDocument();
-    expect(screen.getByTestId('content')).toBeInTheDocument();
-    expect(screen.getByText('Test Content')).toBeInTheDocument();
     expect(screen.getByTestId('footer')).toBeInTheDocument();
+    expect(screen.getByTestId('test-content')).toBeInTheDocument();
+    expect(screen.getByRole('main')).toBeInTheDocument();
   });
 });
