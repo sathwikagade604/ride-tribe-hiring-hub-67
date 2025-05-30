@@ -14,9 +14,10 @@ import {
 
 interface QuickAccessGridProps {
   isAuthenticated: boolean;
+  onCompanyAccess?: () => void;
 }
 
-const QuickAccessGrid: React.FC<QuickAccessGridProps> = ({ isAuthenticated }) => {
+const QuickAccessGrid: React.FC<QuickAccessGridProps> = ({ isAuthenticated, onCompanyAccess }) => {
   return (
     <div className="mb-12">
       <h2 className="text-2xl font-bold mb-6 text-center">Quick Access</h2>
@@ -61,11 +62,13 @@ const QuickAccessGrid: React.FC<QuickAccessGridProps> = ({ isAuthenticated }) =>
             <p className="text-muted-foreground mb-4">
               Employee access, support, and administrative tools
             </p>
-            <Link to="/access">
-              <Button variant="outline" className="w-full">
-                Company Access
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={onCompanyAccess}
+            >
+              Company Access
+            </Button>
           </CardContent>
         </Card>
 

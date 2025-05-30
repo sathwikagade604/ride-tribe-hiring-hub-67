@@ -13,9 +13,9 @@ interface Ride {
   id: string;
   pickup_address: string;
   destination_address: string;
-  fare_amount: number;
+  fare: number;
   vehicle_type: string;
-  ride_status: string;
+  status: string;
   requested_at: string;
   completed_at?: string;
   driver_rating?: number;
@@ -36,7 +36,7 @@ const RideHistory = () => {
 
       const { data, error } = await supabase
         .from('rides')
-        .select('*')
+        .select('id, pickup_address, destination_address, fare, vehicle_type, status, requested_at, completed_at, driver_rating')
         .eq('rider_id', user.user.id)
         .order('requested_at', { ascending: false })
         .limit(20);
@@ -103,8 +103,8 @@ const RideHistory = () => {
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Badge className={getStatusColor(ride.ride_status)}>
-                    {ride.ride_status.replace('_', ' ').toUpperCase()}
+                  <Badge className={getStatusColor(ride.status)}>
+                    {ride.status.replace('_', ' ').toUpperCase()}
                   </Badge>
                   <span className="text-sm text-muted-foreground capitalize">
                     {ride.vehicle_type}
@@ -126,7 +126,7 @@ const RideHistory = () => {
               
               <div className="text-right">
                 <div className="text-lg font-bold text-green-600">
-                  {formatCurrency(ride.fare_amount)}
+                  {formatCurrency(ride.fare)}
                 </div>
                 <div className="text-sm text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
@@ -145,7 +145,7 @@ const RideHistory = () => {
                 )}
               </div>
               
-              {ride.ride_status === 'completed' && (
+              {ride.status === 'completed' && (
                 <Button
                   variant="outline"
                   size="sm"

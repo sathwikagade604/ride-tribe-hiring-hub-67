@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user && !data.session) {
-        toast.success('Please check your email to confirm your account before logging in');
+        toast.success('Please check your email to verify your account before logging in');
       } else if (data.session) {
         toast.success('Account created successfully!');
         
@@ -86,6 +86,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               user_id: data.user.id,
               phone_number: userData.phone
             }]);
+        }
+
+        // Assign user role based on user type
+        if (userData?.user_type) {
+          await supabase.rpc('assign_user_role', {
+            _user_id: data.user.id,
+            _role: userData.user_type
+          });
         }
       }
       

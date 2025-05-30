@@ -94,22 +94,24 @@ const RideBookingApp = () => {
         return;
       }
 
-      // Create ride booking
+      // Create ride booking with required location points
       const rideData = {
         rider_id: user.user.id,
         pickup_address: pickup.address,
         pickup_latitude: pickup.latitude || 0,
         pickup_longitude: pickup.longitude || 0,
+        pickup_location: `POINT(${pickup.longitude || 0} ${pickup.latitude || 0})`,
         destination_address: destination.address,
         destination_latitude: destination.latitude || 0,
         destination_longitude: destination.longitude || 0,
+        destination_location: `POINT(${destination.longitude || 0} ${destination.latitude || 0})`,
         vehicle_type: selectedVehicle.id as 'bike' | 'auto' | 'mini' | 'sedan' | 'suv',
         payment_method: paymentMethod as 'cash' | 'card' | 'wallet' | 'upi',
-        fare_amount: fare?.total || 0,
+        fare: fare?.total || 0,
         distance_km: fare ? 5.2 : 0,
         special_requests: specialRequests,
         scheduled_time: isScheduled && scheduledTime ? new Date(scheduledTime).toISOString() : null,
-        ride_status: 'requested' as const
+        status: 'requested' as const
       };
 
       const { data: ride, error } = await supabase
