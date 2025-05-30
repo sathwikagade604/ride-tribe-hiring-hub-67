@@ -4,6 +4,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
+type AppRole = 'admin' | 'driver' | 'rider' | 'support';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -11,7 +13,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, userData?: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  hasRole: (role: string) => Promise<boolean>;
+  hasRole: (role: AppRole) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,11 +31,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user && event === 'SIGNED_IN') {
-          // Log security event
-          await supabase.rpc('log_security_event', {
-            _action: 'user_login',
-            _resource: 'authentication'
-          });
+          // Log security event - using a direct query instead of RPC for now
+          try {
+            await supabase
+              .from('security_audit_log')
+              .insert([{
+                user_id: session.user.id,
+                action: 'user_login',
+                resource: 'authentication'
+              }]);
+          } catch (error) {
+            console.log('Security logging error:', error);
+          }
         }
         
         setLoading(false);
@@ -80,10 +89,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) {
       toast.error(`Sign in failed: ${error.message}`);
       // Log failed login attempt
-      await supabase.rpc('log_security_event', {
-        _action: 'failed_login',
-        _resource: 'authentication'
-      });
+      try {
+        await supabase
+          .from('security_audit_log')
+          .insert([{
+            action: 'failed_login',
+            resource: 'authentication'
+          }]);
+      } catch (logError) {
+        console.log('Security logging error:', logError);
+      }
     }
     
     return { error };
@@ -91,10 +106,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     if (user) {
-      await supabase.rpc('log_security_event', {
-        _action: 'user_logout',
-        _resource: 'authentication'
-      });
+      try {
+        await supabase
+          .from('security_audit_log')
+          .insert([{
+            user_id: user.id,
+            action: 'user_logout',
+            resource: 'authentication'
+          }]);
+      } catch (error) {
+        console.log('Security logging error:', error);
+      }
     }
     
     const { error } = await supabase.auth.signOut();
@@ -103,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const hasRole = async (role: string): Promise<boolean> => {
+  const hasRole = async (role: AppRole): Promise<boolean> => {
     if (!user) return false;
     
     const { data, error } = await supabase.rpc('has_role', {

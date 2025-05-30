@@ -5,10 +5,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
+type AppRole = 'admin' | 'driver' | 'rider' | 'support';
+
 interface AuthGuardProps {
   children: React.ReactNode;
   requireAuth?: boolean;
-  requiredRole?: string;
+  requiredRole?: AppRole;
   redirectTo?: string;
 }
 
