@@ -11,15 +11,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/components/ui/sonner';
 import PageLayout from '@/layouts/PageLayout';
+import { useAuth } from '@/hooks/useAuth';
+import { emailSchema, securePasswordSchema, checkRateLimit } from '@/utils/validation';
+import { Shield, AlertTriangle } from 'lucide-react';
 
-// Enhanced login form schema
+// Enhanced login form schema with security
 const loginFormSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
-  }),
+  email: emailSchema,
+  password: z.string().min(1, "Password is required"),
   userType: z.enum(['rider', 'driver']),
 });
 
@@ -27,6 +26,8 @@ type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn, user, loading } = useAuth();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -37,32 +38,59 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    console.log('Login attempt with:', data);
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (user && !loading) {
+      navigate('/dashboard');
+    }
+  }, [user, loading, navigate]);
+
+  const onSubmit = async (data: LoginFormValues) => {
+    const rateLimitKey = `login_${data.email}`;
     
-    // Store auth status in localStorage for persistence
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('username', data.email.split('@')[0]);
-    localStorage.setItem('userType', data.userType);
+    if (!checkRateLimit(rateLimitKey, 5, 900000)) {
+      toast.error('Too many login attempts. Please try again in 15 minutes.');
+      return;
+    }
     
-    toast.success(`Login successful as ${data.userType}! Redirecting...`);
+    setIsSubmitting(true);
     
-    // Redirect based on user type
-    setTimeout(() => {
-      if (data.userType === 'driver') {
-        navigate('/driver-app');
-      } else {
-        navigate('/dashboard');
+    try {
+      const { error } = await signIn(data.email, data.password);
+      
+      if (!error) {
+        toast.success(`Login successful! Redirecting...`);
+        
+        // Redirect based on user type
+        setTimeout(() => {
+          if (data.userType === 'driver') {
+            navigate('/driver-app');
+          } else {
+            navigate('/dashboard');
+          }
+        }, 1000);
       }
-    }, 1000);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return <PageLayout><div>Loading...</div></PageLayout>;
+  }
 
   return (
     <PageLayout>
       <div className="container mx-auto px-4 py-16 max-w-md">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
+            <div className="flex items-center justify-center mb-4">
+              <Shield className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Secure Login</CardTitle>
             <CardDescription className="text-center">
               Enter your credentials to access your account
             </CardDescription>
@@ -77,7 +105,12 @@ const Login = () => {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your email address" {...field} />
+                        <Input 
+                          type="email"
+                          placeholder="Your email address" 
+                          autoComplete="email"
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -91,7 +124,12 @@ const Login = () => {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Your password" {...field} />
+                        <Input 
+                          type="password" 
+                          placeholder="Your password" 
+                          autoComplete="current-password"
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -133,7 +171,13 @@ const Login = () => {
                   )}
                 />
                 
-                <Button type="submit" className="w-full">Login</Button>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Signing In...' : 'Login'}
+                </Button>
               </form>
             </Form>
             
@@ -144,11 +188,15 @@ const Login = () => {
               </Link>
             </div>
             
-            <div className="mt-4 p-3 bg-muted rounded-lg">
-              <p className="text-sm font-medium mb-2">Demo Credentials:</p>
-              <p className="text-xs text-muted-foreground">Email: demo@example.com</p>
-              <p className="text-xs text-muted-foreground">Password: demo123</p>
-              <p className="text-xs text-muted-foreground">Choose Rider or Driver to test different features</p>
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <p className="text-sm font-medium text-amber-800">Security Notice</p>
+              </div>
+              <p className="text-xs text-amber-700">
+                Your account is protected with advanced security features. 
+                Multiple failed login attempts will result in temporary account lockout.
+              </p>
             </div>
           </CardContent>
         </Card>

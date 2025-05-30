@@ -1,48 +1,38 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Toaster } from '@/components/ui/sonner';
+import Login from '@/pages/Login';
+import Signup from '@/pages/Signup';
+import Dashboard from '@/pages/Dashboard';
+import DriverApp from '@/pages/DriverApp';
+import Access from '@/pages/Access';
+import DriverHiringApp from '@/components/hiring/DriverHiringApp';
+import Unauthorized from '@/pages/Unauthorized';
+import { AuthProvider } from '@/hooks/useAuth';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import React from "react";
-import Index from "./pages/Index";
-import DriversPage from "./pages/DriversPage";
-import RidersPage from "./pages/RidersPage";
-import SafetyPage from "./pages/SafetyPage";
-import Access from "./pages/Access";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
-import DriverApp from "./pages/DriverApp";
-import NotFound from "./pages/NotFound";
-
-// Create a client
 const queryClient = new QueryClient();
 
-const App: React.FC = () => {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <AuthProvider>
+        <Router>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/drivers" element={<DriversPage />} />
-            <Route path="/riders" element={<RidersPage />} />
-            <Route path="/safety" element={<SafetyPage />} />
-            <Route path="/access" element={<Access />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/driver-app" element={<DriverApp />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="/access" element={<Access />} />
+            <Route path="/driver-hiring" element={<DriverHiringApp />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/" element={<Access />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+          <Toaster />
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
