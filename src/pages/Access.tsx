@@ -19,27 +19,33 @@ const Access = () => {
   const [showRoleAuth, setShowRoleAuth] = useState(false);
   const [currentRole, setCurrentRole] = useState<RoleKey>('employee');
   const [currentSubRole, setCurrentSubRole] = useState<SubRoleKey>('');
-  const [username, setUsername] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [activeTab, setActiveTab] = useState('general');
 
   const handleRoleAuthSuccess = (role: string) => {
-    // Redirect based on role
-    switch (role) {
-      case 'rider':
-        navigate('/dashboard');
-        break;
-      case 'driver':
-        navigate('/driver-app');
-        break;
-      case 'admin':
-        // Stay on access page but show admin content
-        setCurrentRole('employee');
-        setShowRoleAuth(false);
-        break;
-      default:
-        setShowRoleAuth(false);
+    console.log('Role auth success:', role);
+    
+    // Handle public roles (rider/driver)
+    if (role === 'rider') {
+      navigate('/dashboard');
+      return;
     }
+    
+    if (role === 'driver') {
+      navigate('/driver-app');
+      return;
+    }
+    
+    // Handle company/departmental roles
+    const validDepartments = ['employee', 'support', 'service', 'chat', 'query', 'tracking', 'technical', 'safety', 'emergency', 'callcenter'];
+    if (validDepartments.includes(role)) {
+      setCurrentRole(role as RoleKey);
+      setShowRoleAuth(false);
+      return;
+    }
+    
+    // Default fallback
+    setShowRoleAuth(false);
   };
 
   const handleDriverSelect = (driver: Driver) => {
@@ -70,7 +76,11 @@ const Access = () => {
               role={currentRole}
               username={user.email || 'User'}
               subRole={currentSubRole}
-              onLogout={() => setShowRoleAuth(false)}
+              onLogout={() => {
+                setCurrentRole('employee');
+                setCurrentSubRole('');
+                setShowRoleAuth(false);
+              }}
               selectedDriver={selectedDriver}
               activeTab={activeTab}
               setActiveTab={setActiveTab}

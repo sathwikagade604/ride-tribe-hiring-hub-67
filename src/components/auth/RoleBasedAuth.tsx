@@ -18,7 +18,7 @@ const roleSignupSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
-  role: z.enum(['admin', 'driver', 'rider'] as const),
+  role: z.enum(['driver', 'rider'] as const),
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   licenseNumber: z.string().optional(),
@@ -30,11 +30,18 @@ const roleSignupSchema = z.object({
 const roleLoginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
-  role: z.enum(['admin', 'driver', 'rider'] as const),
+  role: z.enum(['driver', 'rider'] as const),
+});
+
+const companyAccessSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+  department: z.enum(['employee', 'support', 'service', 'chat', 'query', 'tracking', 'technical', 'safety', 'emergency', 'callcenter'] as const),
 });
 
 type RoleSignupValues = z.infer<typeof roleSignupSchema>;
 type RoleLoginValues = z.infer<typeof roleLoginSchema>;
+type CompanyAccessValues = z.infer<typeof companyAccessSchema>;
 
 interface RoleBasedAuthProps {
   onSuccess: (role: string) => void;
@@ -43,6 +50,7 @@ interface RoleBasedAuthProps {
 const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
   const { signUp, signIn, loading } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
+  const [isCompanyAccess, setIsCompanyAccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const signupForm = useForm<RoleSignupValues>({
@@ -67,8 +75,16 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
     },
   });
 
+  const companyForm = useForm<CompanyAccessValues>({
+    resolver: zodResolver(companyAccessSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      department: 'employee',
+    },
+  });
+
   const watchRole = signupForm.watch('role');
-  const watchLoginRole = loginForm.watch('role');
 
   const onSignup = async (data: RoleSignupValues) => {
     setIsSubmitting(true);
@@ -109,10 +125,24 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
     }
   };
 
+  const onCompanyAccess = async (data: CompanyAccessValues) => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await signIn(data.email, data.password);
+      
+      if (!error) {
+        toast.success('Company access granted!');
+        onSuccess(data.department);
+      }
+    } catch (error) {
+      toast.error('Failed to access company portal. Please check your credentials.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin':
-        return Building;
       case 'driver':
         return Car;
       case 'rider':
@@ -124,8 +154,6 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
 
   const getRoleDescription = (role: string) => {
     switch (role) {
-      case 'admin':
-        return 'Access administrative functions and company management';
       case 'driver':
         return 'Access driver dashboard and trip management';
       case 'rider':
@@ -133,6 +161,11 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
       default:
         return 'Select your role to continue';
     }
+  };
+
+  const getDepartmentIcon = (dept: string) => {
+    const deptData = roleAccessLevels[dept as RoleKey];
+    return deptData ? deptData.icon : Building;
   };
 
   if (loading) {
@@ -143,6 +176,111 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
     );
   }
 
+  // Company Access Portal
+  if (isCompanyAccess) {
+    return (
+      <div className="max-w-md mx-auto">
+        <Card>
+          <CardHeader className="text-center">
+            <Building className="h-8 w-8 mx-auto mb-4 text-primary" />
+            <CardTitle>Company Access Portal</CardTitle>
+            <CardDescription>
+              Login with your department credentials
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Form {...companyForm}>
+              <form onSubmit={companyForm.handleSubmit(onCompanyAccess)} className="space-y-4">
+                <FormField
+                  control={companyForm.control}
+                  name="department"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Select Department</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="space-y-3"
+                        >
+                          {Object.entries(roleAccessLevels).map(([key, deptData]) => {
+                            const Icon = deptData.icon;
+                            return (
+                              <FormItem key={key} className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value={key} />
+                                </FormControl>
+                                <div className="flex items-center gap-3 flex-1">
+                                  <Icon className="h-5 w-5" />
+                                  <div>
+                                    <FormLabel className="font-medium">
+                                      {deptData.name}
+                                    </FormLabel>
+                                    <p className="text-xs text-muted-foreground">
+                                      {deptData.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </FormItem>
+                            );
+                          })}
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={companyForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="Enter your company email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={companyForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Enter your password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Accessing...' : 'Access Company Portal'}
+                </Button>
+              </form>
+            </Form>
+
+            <div className="text-center">
+              <Button
+                variant="link"
+                onClick={() => setIsCompanyAccess(false)}
+                className="text-sm"
+              >
+                Back to Public Access
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Public Access (Rider/Driver)
   return (
     <div className="max-w-md mx-auto">
       <Card>
@@ -150,7 +288,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
           <Shield className="h-8 w-8 mx-auto mb-4 text-primary" />
           <CardTitle>{isSignup ? 'Create Account' : 'Sign In'}</CardTitle>
           <CardDescription>
-            {isSignup ? 'Choose your role and create an account' : 'Sign in to your role-based account'}
+            {isSignup ? 'Choose your role and create an account' : 'Sign in to your account'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -169,7 +307,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                           defaultValue={field.value}
                           className="space-y-3"
                         >
-                          {(['rider', 'driver', 'admin'] as const).map((role) => {
+                          {(['rider', 'driver'] as const).map((role) => {
                             const Icon = getRoleIcon(role);
                             return (
                               <FormItem key={role} className="flex items-center space-x-3 space-y-0">
@@ -303,7 +441,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                           defaultValue={field.value}
                           className="space-y-3"
                         >
-                          {(['rider', 'driver', 'admin'] as const).map((role) => {
+                          {(['rider', 'driver'] as const).map((role) => {
                             const Icon = getRoleIcon(role);
                             return (
                               <FormItem key={role} className="flex items-center space-x-3 space-y-0">
@@ -363,7 +501,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
             </Form>
           )}
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <Button
               variant="link"
               onClick={() => setIsSignup(!isSignup)}
@@ -373,6 +511,17 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                 ? 'Already have an account? Sign in' 
                 : "Don't have an account? Sign up"}
             </Button>
+            
+            <div className="border-t pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsCompanyAccess(true)}
+                className="w-full"
+              >
+                <Building className="h-4 w-4 mr-2" />
+                Company Access Portal
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
