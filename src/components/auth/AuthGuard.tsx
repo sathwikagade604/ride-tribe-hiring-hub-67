@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
-type AppRole = 'admin' | 'driver' | 'rider' | 'support';
+type AppRole = 'admin' | 'driver' | 'rider';
 
 interface AuthGuardProps {
   children: React.ReactNode;

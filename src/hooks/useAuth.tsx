@@ -4,7 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
-type AppRole = 'admin' | 'driver' | 'rider' | 'support';
+type AppRole = 'admin' | 'driver' | 'rider';
 
 interface AuthContextType {
   user: User | null;
@@ -29,22 +29,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
-        if (session?.user && event === 'SIGNED_IN') {
-          // Log security event - using a direct query instead of RPC for now
-          try {
-            await supabase
-              .from('security_audit_log')
-              .insert([{
-                user_id: session.user.id,
-                action: 'user_login',
-                resource: 'authentication'
-              }]);
-          } catch (error) {
-            console.log('Security logging error:', error);
-          }
-        }
-        
         setLoading(false);
       }
     );
@@ -88,37 +72,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (error) {
       toast.error(`Sign in failed: ${error.message}`);
-      // Log failed login attempt
-      try {
-        await supabase
-          .from('security_audit_log')
-          .insert([{
-            action: 'failed_login',
-            resource: 'authentication'
-          }]);
-      } catch (logError) {
-        console.log('Security logging error:', logError);
-      }
     }
     
     return { error };
   };
 
   const signOut = async () => {
-    if (user) {
-      try {
-        await supabase
-          .from('security_audit_log')
-          .insert([{
-            user_id: user.id,
-            action: 'user_logout',
-            resource: 'authentication'
-          }]);
-      } catch (error) {
-        console.log('Security logging error:', error);
-      }
-    }
-    
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error(`Sign out failed: ${error.message}`);
