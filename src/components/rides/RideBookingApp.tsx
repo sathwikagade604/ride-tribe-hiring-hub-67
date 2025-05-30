@@ -33,7 +33,6 @@ const RideBookingApp = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         console.log('Current location:', position.coords);
-        // In a real app, you'd reverse geocode this to get the address
         setPickup({
           address: 'Current Location',
           latitude: position.coords.latitude,
@@ -73,21 +72,32 @@ const RideBookingApp = () => {
         return;
       }
 
+      // Create proper point geometries for PostgreSQL
+      const pickupPoint = pickup.latitude && pickup.longitude 
+        ? `POINT(${pickup.longitude} ${pickup.latitude})`
+        : 'POINT(0 0)';
+      
+      const destinationPoint = destination.latitude && destination.longitude
+        ? `POINT(${destination.longitude} ${destination.latitude})`
+        : 'POINT(0 0)';
+
       const rideData = {
         rider_id: user.user.id,
         pickup_address: pickup.address,
-        pickup_latitude: pickup.latitude,
-        pickup_longitude: pickup.longitude,
+        pickup_location: pickupPoint,
+        pickup_latitude: pickup.latitude || 0,
+        pickup_longitude: pickup.longitude || 0,
         destination_address: destination.address,
-        destination_latitude: destination.latitude,
-        destination_longitude: destination.longitude,
-        vehicle_type: selectedVehicle.id,
-        payment_method: paymentMethod,
-        fare_amount: fare?.total,
+        destination_location: destinationPoint,
+        destination_latitude: destination.latitude || 0,
+        destination_longitude: destination.longitude || 0,
+        vehicle_type: selectedVehicle.id as 'bike' | 'auto' | 'mini' | 'sedan' | 'suv',
+        payment_method: paymentMethod as 'cash' | 'card' | 'wallet' | 'upi',
+        fare_amount: fare?.total || 0,
         distance_km: 5.2,
         special_requests: specialRequests,
         scheduled_time: isScheduled ? new Date(scheduledTime).toISOString() : null,
-        status: 'requested'
+        ride_status: 'requested' as const
       };
 
       const { data: ride, error } = await supabase
@@ -96,7 +106,10 @@ const RideBookingApp = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       setCurrentRide(ride);
       setCurrentStep('confirmation');
