@@ -1,49 +1,107 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 import PageLayout from '@/layouts/PageLayout';
 import RideBookingApp from '@/components/rides/RideBookingApp';
-import RiderDashboard from '@/components/rides/RiderDashboard';
-import { useAuth } from '@/hooks/useAuth';
-import AuthGuard from '@/components/auth/AuthGuard';
-import { LogOut } from 'lucide-react';
+import RideHistory from '@/components/rides/RideHistory';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MapPin, Clock, Star, CreditCard } from 'lucide-react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, loading } = useAuth();
 
-  const handleLogout = async () => {
-    await signOut();
-  };
-
-  return (
-    <AuthGuard requireAuth={true}>
+  if (loading) {
+    return (
       <PageLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Rider Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back, {user?.user_metadata?.full_name || user?.email}!</p>
-            </div>
-            <Button onClick={handleLogout} variant="outline">
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <RideBookingApp />
-            </div>
-            <div className="lg:col-span-1">
-              <RiderDashboard />
-            </div>
-          </div>
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingSpinner size="lg" />
         </div>
       </PageLayout>
-    </AuthGuard>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <PageLayout>
+      <div className="container mx-auto px-4 py-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">Welcome back!</h1>
+          <p className="text-muted-foreground">Book your ride and travel safely</p>
+        </div>
+
+        <Tabs defaultValue="book-ride" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="book-ride" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Book Ride
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              History
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="wallet" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Wallet
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="book-ride">
+            <RideBookingApp />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <RideHistory />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Email</label>
+                    <p className="text-muted-foreground">{user.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Member since</label>
+                    <p className="text-muted-foreground">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="wallet">
+            <Card>
+              <CardHeader>
+                <CardTitle>Wallet & Payments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <CreditCard className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Payment Methods</h3>
+                  <p className="text-muted-foreground">Add payment methods for faster checkout</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </PageLayout>
   );
 };
 

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin } from 'lucide-react';
+import { MapPin, AlertCircle } from 'lucide-react';
 import { vehicleTypes, calculateFare, formatCurrency, VehicleType } from '@/utils/fareCalculator';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,7 @@ import FareBreakdown from './FareBreakdown';
 import RideConfirmation from './RideConfirmation';
 import RideTrackingView from './RideTrackingView';
 import RideScheduling from './RideScheduling';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Location {
   address: string;
@@ -32,76 +33,82 @@ const RideBookingApp = () => {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'wallet' | 'upi'>('cash');
   const [specialRequests, setSpecialRequests] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
-  // Mock current location
+  // Get current location with better error handling
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log('Current location:', position.coords);
-        setPickup({
-          address: 'Current Location',
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        });
-      },
-      (error) => {
-        console.log('Location access denied:', error);
-        toast.error('Please enable location access for better experience');
-      }
-    );
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log('Current location obtained:', position.coords);
+          setPickup({
+            address: 'Current Location',
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+          setError('');
+        },
+        (error) => {
+          console.log('Location access error:', error);
+          const errorMessage = error.code === 1 
+            ? 'Location access denied. Please enable location services.' 
+            : 'Unable to get your location. Please enter pickup location manually.';
+          setError(errorMessage);
+          toast.error(errorMessage);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+      );
+    } else {
+      const errorMessage = 'Geolocation is not supported by this browser.';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
   }, []);
 
   const calculateEstimatedFare = () => {
     if (!pickup.latitude || !destination.latitude) return null;
     
-    // Mock distance calculation (in real app, use Google Maps API)
-    const distance = 5.2; // km
-    const timeMinutes = 15;
+    // Mock distance calculation - in real app, use Google Maps API
+    const distance = Math.abs(pickup.latitude - destination.latitude) * 111 + 
+                    Math.abs((pickup.longitude || 0) - (destination.longitude || 0)) * 111;
+    const timeMinutes = Math.max(10, distance * 3); // Rough estimation
     
     return calculateFare(distance, timeMinutes, selectedVehicle.id, isScheduled);
   };
 
   const handleBookRide = async () => {
     if (!pickup.address || !destination.address) {
-      toast.error('Please enter pickup and destination locations');
+      toast.error('Please enter both pickup and destination locations');
       return;
     }
 
     setIsLoading(true);
+    setError('');
+    
     try {
       const fare = calculateEstimatedFare();
       
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user.user) {
         toast.error('Please login to book a ride');
         return;
       }
 
-      // Create proper point geometries for PostgreSQL
-      const pickupPoint = pickup.latitude && pickup.longitude 
-        ? `POINT(${pickup.longitude} ${pickup.latitude})`
-        : 'POINT(0 0)';
-      
-      const destinationPoint = destination.latitude && destination.longitude
-        ? `POINT(${destination.longitude} ${destination.latitude})`
-        : 'POINT(0 0)';
-
+      // Create ride booking
       const rideData = {
         rider_id: user.user.id,
         pickup_address: pickup.address,
-        pickup_location: pickupPoint,
         pickup_latitude: pickup.latitude || 0,
         pickup_longitude: pickup.longitude || 0,
         destination_address: destination.address,
-        destination_location: destinationPoint,
         destination_latitude: destination.latitude || 0,
         destination_longitude: destination.longitude || 0,
         vehicle_type: selectedVehicle.id as 'bike' | 'auto' | 'mini' | 'sedan' | 'suv',
         payment_method: paymentMethod as 'cash' | 'card' | 'wallet' | 'upi',
         fare_amount: fare?.total || 0,
-        distance_km: 5.2,
+        distance_km: fare ? 5.2 : 0,
         special_requests: specialRequests,
-        scheduled_time: isScheduled ? new Date(scheduledTime).toISOString() : null,
+        scheduled_time: isScheduled && scheduledTime ? new Date(scheduledTime).toISOString() : null,
         ride_status: 'requested' as const
       };
 
@@ -112,23 +119,25 @@ const RideBookingApp = () => {
         .single();
 
       if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+        console.error('Booking error:', error);
+        throw new Error('Failed to book ride. Please try again.');
       }
 
       setCurrentRide(ride);
       setCurrentStep('confirmation');
       toast.success('Ride booked successfully! Looking for nearby drivers...');
       
-      // Simulate driver assignment after 3 seconds
+      // Simulate driver assignment
       setTimeout(() => {
         setCurrentStep('tracking');
-        toast.success('Driver assigned! Check ride tracking for updates.');
+        toast.success('Driver assigned! Your ride is on the way.');
       }, 3000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error booking ride:', error);
-      toast.error('Failed to book ride. Please try again.');
+      const errorMessage = error.message || 'Failed to book ride. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -159,7 +168,14 @@ const RideBookingApp = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
