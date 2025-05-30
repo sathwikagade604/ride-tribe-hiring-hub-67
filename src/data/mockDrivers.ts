@@ -7,4 +7,7 @@ export const mockDrivers = [
   { id: 5, name: 'Sanjay Gupta', rating: 4.5, city: 'Kolkata', status: 'Active', trips: 356, joinDate: '2023-06-30' },
 ];
 
+// Export drivers as well for compatibility
+export const drivers = mockDrivers;
+
 export type Driver = typeof mockDrivers[0];
