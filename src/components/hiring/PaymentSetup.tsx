@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { CreditCard, Wallet, Bank, IndianRupee, CheckCircle, AlertTriangle } from 'lucide-react';
+import { CreditCard, Wallet, Ban, IndianRupee, CheckCircle, AlertTriangle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 interface PaymentSetupProps {
@@ -20,7 +19,7 @@ const PaymentSetup: React.FC<PaymentSetupProps> = ({ drivers, onUpdateDriver }) 
   const [paymentDialog, setPaymentDialog] = useState(false);
 
   const paymentMethods = [
-    { id: 'bank', label: 'Bank Account', icon: Bank, description: 'Direct bank transfer' },
+    { id: 'bank', label: 'Bank Account', icon: Ban, description: 'Direct bank transfer' },
     { id: 'upi', label: 'UPI', icon: Wallet, description: 'UPI payments' },
     { id: 'wallet', label: 'Digital Wallet', icon: CreditCard, description: 'Paytm, PhonePe, etc.' }
   ];
