@@ -7,14 +7,17 @@ import DriverDashboard from '@/components/driver/DriverDashboard';
 import DriverVerification from '@/components/driver/DriverVerification';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { useNavigate } from 'react-router-dom';
 import { Car, Shield, User, Settings, LogOut } from 'lucide-react';
 
 const DriverApp = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const handleLogout = async () => {
     await signOut();
+    navigate('/');
   };
 
   return (

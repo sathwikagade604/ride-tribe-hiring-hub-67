@@ -11,11 +11,10 @@ import { z } from 'zod';
 import { toast } from '@/components/ui/sonner';
 import PageLayout from '@/layouts/PageLayout';
 import { useAuth } from '@/hooks/useAuth';
-import { emailSchema, checkRateLimit } from '@/utils/validation';
 import { Car, AlertTriangle } from 'lucide-react';
 
 const driverLoginSchema = z.object({
-  email: emailSchema,
+  email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -41,13 +40,6 @@ const DriverLogin = () => {
   }, [user, loading, navigate]);
 
   const onSubmit = async (data: DriverLoginValues) => {
-    const rateLimitKey = `login_${data.email}`;
-    
-    if (!checkRateLimit(rateLimitKey, 5, 900000)) {
-      toast.error('Too many login attempts. Please try again in 15 minutes.');
-      return;
-    }
-    
     setIsSubmitting(true);
     
     try {

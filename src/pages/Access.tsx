@@ -5,7 +5,6 @@ import PageLayout from '@/layouts/PageLayout';
 import { useAuth } from '@/hooks/useAuth';
 import RoleBasedAuth from '@/components/auth/RoleBasedAuth';
 import LandingHero from '@/components/access/LandingHero';
-import QuickAccessGrid from '@/components/access/QuickAccessGrid';
 import FeatureHighlights from '@/components/access/FeatureHighlights';
 import AuthenticatedSection from '@/components/access/AuthenticatedSection';
 import { RoleKey, SubRoleKey } from '@/constants/roleAccessLevels';
@@ -18,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Car, Users, Building, UserPlus } from 'lucide-react';
 
 const Access = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [showRoleAuth, setShowRoleAuth] = useState(false);
   const [showDashboardPopup, setShowDashboardPopup] = useState(true);
@@ -72,6 +71,14 @@ const Access = () => {
         navigate('/driver-hiring');
         break;
     }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    setCurrentRole('employee');
+    setCurrentSubRole('');
+    setShowRoleAuth(false);
+    navigate('/');
   };
 
   if (loading) {
@@ -208,11 +215,7 @@ const Access = () => {
               role={currentRole}
               username={user.email || 'User'}
               subRole={currentSubRole}
-              onLogout={() => {
-                setCurrentRole('employee');
-                setCurrentSubRole('');
-                setShowRoleAuth(false);
-              }}
+              onLogout={handleLogout}
               selectedDriver={selectedDriver}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -295,10 +298,6 @@ const Access = () => {
                 </Card>
               </div>
 
-              <QuickAccessGrid 
-                isAuthenticated={!!user}
-                onCompanyAccess={() => setShowRoleAuth(true)}
-              />
               <FeatureHighlights />
             </div>
           </div>

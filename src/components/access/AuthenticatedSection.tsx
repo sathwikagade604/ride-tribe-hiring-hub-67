@@ -4,7 +4,6 @@ import { Driver } from '@/data/mockDrivers';
 import { RoleKey, SubRoleKey } from '@/constants/roleAccessLevels';
 import RoleHeader from '@/components/access/RoleHeader';
 import AccessPermissionsBanner from '@/components/access/AccessPermissionsBanner';
-import QuickAccess from '@/components/access/QuickAccess';
 import RoleContent from '@/components/access/RoleContent';
 import DriverDetail from '@/components/access/DriverDetail';
 
@@ -41,8 +40,6 @@ const AuthenticatedSection: React.FC<AuthenticatedSectionProps> = ({
       />
       
       <AccessPermissionsBanner role={role} subRole={subRole} />
-      
-      <QuickAccess role={role} />
       
       {activeTab === 'general' ? (
         <RoleContent 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Lock } from 'lucide-react';
+import { LogOut, Lock } from 'lucide-react';
 import { roleAccessLevels, RoleKey } from '@/constants/roleAccessLevels';
 
 interface RoleHeaderProps {
@@ -47,7 +47,10 @@ const RoleHeader: React.FC<RoleHeaderProps> = ({ role, username, subRole = '', o
             </span>
           </div>
         </Card>
-        <Button onClick={onLogout} variant="outline">Logout</Button>
+        <Button onClick={onLogout} variant="outline">
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
       </div>
     </div>
   );

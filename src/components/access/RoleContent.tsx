@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { RoleKey, SubRoleKey } from '@/constants/roleAccessLevels';
 import EmployeeContent from '@/components/access/EmployeeContent';
 import SupportContent from '@/components/access/SupportContent';
@@ -78,15 +77,13 @@ const RoleContent: React.FC<RoleContentProps> = ({
       case 'callcenter':
         return (
           <div className="text-center p-8">
-            <p>Content for {role} role is under development.</p>
-            <Button onClick={onLogout} className="mt-4">Logout</Button>
+            <p className="text-muted-foreground">Content for {role} role is under development.</p>
           </div>
         );
       default:
         return (
           <div className="text-center p-8">
-            <p>Unknown role: {role}</p>
-            <Button onClick={onLogout} className="mt-4">Logout</Button>
+            <p className="text-muted-foreground">Unknown role: {role}</p>
           </div>
         );
     }

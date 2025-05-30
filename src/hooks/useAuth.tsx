@@ -47,13 +47,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, userData?: any) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: userData
         }
       });
@@ -65,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user && !data.session) {
-        toast.success('Please check your email to verify your account before logging in');
+        toast.success('Account created successfully! You can now log in.');
       } else if (data.session) {
         toast.success('Account created successfully!');
         
@@ -138,6 +135,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.error(`Sign out failed: ${error.message}`);
       } else {
         toast.success('Logged out successfully');
+        setUser(null);
+        setSession(null);
       }
     } catch (error) {
       console.error('Logout error:', error);

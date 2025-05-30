@@ -1,17 +1,24 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import PageLayout from '@/layouts/PageLayout';
 import RideBookingApp from '@/components/rides/RideBookingApp';
 import RideHistory from '@/components/rides/RideHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Clock, Star, CreditCard } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MapPin, Clock, Star, CreditCard, LogOut } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const Dashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   if (loading) {
     return (
@@ -24,15 +31,21 @@ const Dashboard = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/rider-login" replace />;
   }
 
   return (
     <PageLayout>
       <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Welcome back!</h1>
-          <p className="text-muted-foreground">Book your ride and travel safely</p>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">Welcome back!</h1>
+            <p className="text-muted-foreground">Book your ride and travel safely</p>
+          </div>
+          <Button onClick={handleLogout} variant="outline">
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
         </div>
 
         <Tabs defaultValue="book-ride" className="w-full">
