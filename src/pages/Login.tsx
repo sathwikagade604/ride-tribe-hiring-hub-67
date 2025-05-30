@@ -12,10 +12,9 @@ import { z } from 'zod';
 import { toast } from '@/components/ui/sonner';
 import PageLayout from '@/layouts/PageLayout';
 import { useAuth } from '@/hooks/useAuth';
-import { emailSchema, securePasswordSchema, checkRateLimit } from '@/utils/validation';
+import { emailSchema, checkRateLimit } from '@/utils/validation';
 import { Shield, AlertTriangle } from 'lucide-react';
 
-// Enhanced login form schema with security
 const loginFormSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Password is required"),
@@ -41,6 +40,7 @@ const Login = () => {
   // Redirect if already authenticated
   React.useEffect(() => {
     if (user && !loading) {
+      console.log('User already authenticated, redirecting...');
       navigate('/dashboard');
     }
   }, [user, loading, navigate]);
@@ -56,19 +56,22 @@ const Login = () => {
     setIsSubmitting(true);
     
     try {
+      console.log('Attempting login for:', data.email);
       const { error } = await signIn(data.email, data.password);
       
       if (!error) {
-        toast.success(`Login successful! Redirecting...`);
+        console.log('Login successful, redirecting...');
         
-        // Redirect based on user type
+        // Small delay to ensure auth state is updated
         setTimeout(() => {
           if (data.userType === 'driver') {
             navigate('/driver-app');
           } else {
             navigate('/dashboard');
           }
-        }, 1000);
+        }, 500);
+      } else {
+        console.error('Login failed:', error);
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -79,7 +82,13 @@ const Login = () => {
   };
 
   if (loading) {
-    return <PageLayout><div>Loading...</div></PageLayout>;
+    return (
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div>Loading...</div>
+        </div>
+      </PageLayout>
+    );
   }
 
   return (
@@ -90,9 +99,9 @@ const Login = () => {
             <div className="flex items-center justify-center mb-4">
               <Shield className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold text-center">Secure Login</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access your account
+              Sign in to your RideShare India account
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -176,7 +185,7 @@ const Login = () => {
                   className="w-full" 
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Signing In...' : 'Login'}
+                  {isSubmitting ? 'Signing In...' : 'Sign In'}
                 </Button>
               </form>
             </Form>
@@ -188,14 +197,13 @@ const Login = () => {
               </Link>
             </div>
             
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-                <p className="text-sm font-medium text-amber-800">Security Notice</p>
+                <AlertTriangle className="h-4 w-4 text-blue-600" />
+                <p className="text-sm font-medium text-blue-800">Important</p>
               </div>
-              <p className="text-xs text-amber-700">
-                Your account is protected with advanced security features. 
-                Multiple failed login attempts will result in temporary account lockout.
+              <p className="text-xs text-blue-700">
+                Only registered users can log in. If you don't have an account, please sign up first.
               </p>
             </div>
           </CardContent>

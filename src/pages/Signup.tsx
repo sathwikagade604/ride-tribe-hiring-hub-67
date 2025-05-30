@@ -15,7 +15,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { emailSchema, securePasswordSchema, phoneSchema, sanitizeUserData } from '@/utils/validation';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 
-// Enhanced signup form schema with security
 const signupFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name too long"),
   email: emailSchema,
@@ -23,9 +22,18 @@ const signupFormSchema = z.object({
   password: securePasswordSchema,
   confirmPassword: z.string(),
   userType: z.enum(['rider', 'driver']),
+  licenseNumber: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
+}).refine((data) => {
+  if (data.userType === 'driver' && !data.licenseNumber) {
+    return false;
+  }
+  return true;
+}, {
+  message: "License number is required for drivers",
+  path: ["licenseNumber"],
 });
 
 type SignupFormValues = z.infer<typeof signupFormSchema>;
@@ -45,8 +53,11 @@ const Signup = () => {
       password: '',
       confirmPassword: '',
       userType: 'rider',
+      licenseNumber: '',
     },
   });
+
+  const watchUserType = form.watch('userType');
 
   // Redirect if already authenticated
   React.useEffect(() => {
@@ -59,18 +70,27 @@ const Signup = () => {
     setIsSubmitting(true);
     
     try {
+      console.log('Creating account for:', data.email, 'Type:', data.userType);
+      
       // Sanitize user data
       const sanitizedData = sanitizeUserData({
         full_name: data.name,
         phone: data.phone,
-        user_type: data.userType
+        user_type: data.userType,
+        license_number: data.licenseNumber,
+        vehicle_type: data.userType === 'driver' ? 'sedan' : undefined
       });
       
       const { error } = await signUp(data.email, data.password, sanitizedData);
       
       if (!error) {
-        toast.success('Account created successfully! Please check your email to verify your account.');
-        navigate('/login');
+        console.log('Account created successfully');
+        // Navigate to login after successful signup
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        console.error('Signup failed:', error);
       }
     } catch (error) {
       console.error('Signup error:', error);
@@ -81,7 +101,13 @@ const Signup = () => {
   };
 
   if (loading) {
-    return <PageLayout><div>Loading...</div></PageLayout>;
+    return (
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div>Loading...</div>
+        </div>
+      </PageLayout>
+    );
   }
 
   return (
@@ -94,7 +120,7 @@ const Signup = () => {
             </div>
             <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
             <CardDescription className="text-center">
-              Join RideShare India with secure registration
+              Join RideShare India today
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -157,6 +183,60 @@ const Signup = () => {
                 
                 <FormField
                   control={form.control}
+                  name="userType"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>I want to:</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="rider" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Sign up as a Rider - Book rides
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="driver" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Sign up as a Driver - Drive and earn
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {watchUserType === 'driver' && (
+                  <FormField
+                    control={form.control}
+                    name="licenseNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Driving License Number</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter your license number" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
+                <FormField
+                  control={form.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
@@ -211,41 +291,6 @@ const Signup = () => {
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="userType"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>I want to:</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="rider" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Sign up as a Rider - Book rides
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="driver" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Sign up as a Driver - Drive and earn
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
                 <Button 
                   type="submit" 
                   className="w-full" 
@@ -259,14 +304,13 @@ const Signup = () => {
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
               <Link to="/login" className="text-blue-600 hover:underline">
-                Log in
+                Sign in
               </Link>
             </div>
             
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-blue-700">
-                By creating an account, you agree to our Terms of Service and Privacy Policy. 
-                Your data is encrypted and protected with industry-standard security measures.
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-xs text-green-700">
+                Create your account with valid credentials. You'll need to verify your email before you can log in.
               </p>
             </div>
           </CardContent>
