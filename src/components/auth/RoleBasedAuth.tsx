@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,8 +41,8 @@ const companyAccessSchema = z.object({
 const companySignupSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   employeeId: z.string().min(3, 'Employee ID must be at least 3 characters'),
   department: z.enum(['employee', 'support', 'service', 'chat', 'query', 'tracking', 'technical', 'safety', 'emergency', 'callcenter'] as const),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -177,6 +176,13 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
   };
 
   const onCompanySignup = async (data: CompanySignupValues) => {
+    console.log('Company signup attempt with data:', { 
+      fullName: data.fullName, 
+      employeeId: data.employeeId, 
+      department: data.department,
+      email: data.email 
+    });
+    
     setIsSubmitting(true);
     try {
       const userData = {
@@ -186,11 +192,13 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
         user_type: 'employee',
       };
 
+      console.log('Calling signUp with userData:', userData);
       const { error } = await signUp(data.email, data.password, userData);
       
       if (!error) {
         toast.success('Company account created successfully! Please check your email to verify your account.');
         setIsCompanySignup(false);
+        setIsCompanyAccess(false);
       }
     } catch (error) {
       console.error('Company signup error:', error);
@@ -250,9 +258,14 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>Full Name *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your full name" {...field} />
+                        <Input 
+                          placeholder="Enter your full name" 
+                          {...field}
+                          autoComplete="name"
+                          disabled={isSubmitting}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -264,9 +277,14 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                   name="employeeId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Employee ID</FormLabel>
+                      <FormLabel>Employee ID *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your employee ID" {...field} />
+                        <Input 
+                          placeholder="Enter your employee ID" 
+                          {...field}
+                          autoComplete="username"
+                          disabled={isSubmitting}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -278,12 +296,13 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                   name="department"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Select Department</FormLabel>
+                      <FormLabel>Select Department *</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           className="space-y-2"
+                          disabled={isSubmitting}
                         >
                           {Object.entries(roleAccessLevels).map(([key, deptData]) => {
                             const Icon = deptData.icon;
@@ -294,7 +313,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                                 </FormControl>
                                 <div className="flex items-center gap-2 flex-1">
                                   <Icon className="h-4 w-4" />
-                                  <FormLabel className="font-medium text-sm">
+                                  <FormLabel className="font-medium text-sm cursor-pointer">
                                     {deptData.name}
                                   </FormLabel>
                                 </div>
@@ -313,9 +332,15 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Company Email</FormLabel>
+                      <FormLabel>Company Email *</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="Enter your company email" {...field} />
+                        <Input 
+                          type="email" 
+                          placeholder="Enter your company email" 
+                          {...field}
+                          autoComplete="email"
+                          disabled={isSubmitting}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -327,13 +352,15 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Password *</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input 
                             type={showPassword ? "text" : "password"} 
                             placeholder="Create a password" 
-                            {...field} 
+                            {...field}
+                            autoComplete="new-password"
+                            disabled={isSubmitting}
                           />
                           <Button
                             type="button"
@@ -341,6 +368,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                             size="sm"
                             className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                             onClick={() => setShowPassword(!showPassword)}
+                            disabled={isSubmitting}
                           >
                             {showPassword ? (
                               <EyeOff className="h-4 w-4" />
@@ -360,9 +388,15 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>Confirm Password *</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Confirm your password" {...field} />
+                        <Input 
+                          type="password" 
+                          placeholder="Confirm your password" 
+                          {...field}
+                          autoComplete="new-password"
+                          disabled={isSubmitting}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -380,6 +414,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                 variant="link"
                 onClick={() => setIsCompanySignup(false)}
                 className="text-sm"
+                disabled={isSubmitting}
               >
                 Already have an account? Sign in
               </Button>
@@ -390,6 +425,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                   setIsCompanySignup(false);
                 }}
                 className="text-sm"
+                disabled={isSubmitting}
               >
                 Back to Public Access
               </Button>
@@ -420,7 +456,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
                   name="department"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Select Department</FormLabel>
+                      <FormLabel>Select Department *</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
