@@ -70,7 +70,13 @@ const AuthenticatedSection: React.FC<AuthenticatedSectionProps> = ({
         </TabsList>
 
         <TabsContent value="general">
-          <RoleContent role={role} subRole={subRole} />
+          <RoleContent 
+            role={role} 
+            subRole={subRole} 
+            onLogout={onLogout}
+            drivers={drivers}
+            onDriverSelect={onDriverSelect}
+          />
         </TabsContent>
 
         <TabsContent value="drivers">
@@ -88,9 +94,10 @@ const AuthenticatedSection: React.FC<AuthenticatedSectionProps> = ({
                   >
                     <CardContent className="p-4">
                       <h3 className="font-semibold">{driver.name}</h3>
-                      <p className="text-sm text-muted-foreground">{driver.vehicle}</p>
+                      <p className="text-sm text-muted-foreground">City: {driver.city}</p>
                       <p className="text-sm">Status: {driver.status}</p>
                       <p className="text-sm">Rating: {driver.rating}/5</p>
+                      <p className="text-sm">Trips: {driver.trips}</p>
                     </CardContent>
                   </Card>
                 ))}
