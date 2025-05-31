@@ -8,7 +8,7 @@ import RideHistory from '@/components/rides/RideHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Star, CreditCard, LogOut } from 'lucide-react';
+import { MapPin, Clock, Star, CreditCard, LogOut, Home } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const Dashboard = () => {
@@ -17,6 +17,10 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     await signOut();
+    navigate('/');
+  };
+
+  const handleGoHome = () => {
     navigate('/');
   };
 
@@ -42,10 +46,16 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold">Welcome back!</h1>
             <p className="text-muted-foreground">Book your ride and travel safely</p>
           </div>
-          <Button onClick={handleLogout} variant="outline">
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleGoHome} variant="outline">
+              <Home className="h-4 w-4 mr-2" />
+              Home
+            </Button>
+            <Button onClick={handleLogout} variant="outline">
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="book-ride" className="w-full">
@@ -91,6 +101,12 @@ const Dashboard = () => {
                     <label className="text-sm font-medium">Member since</label>
                     <p className="text-muted-foreground">
                       {new Date(user.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Email Verified</label>
+                    <p className={user.email_confirmed_at ? "text-green-600" : "text-red-600"}>
+                      {user.email_confirmed_at ? "Verified" : "Not Verified"}
                     </p>
                   </div>
                 </div>

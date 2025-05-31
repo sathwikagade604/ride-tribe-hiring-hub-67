@@ -8,7 +8,7 @@ import DriverVerification from '@/components/driver/DriverVerification';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useNavigate } from 'react-router-dom';
-import { Car, Shield, User, Settings, LogOut } from 'lucide-react';
+import { Car, Shield, User, Settings, LogOut, Home } from 'lucide-react';
 
 const DriverApp = () => {
   const { user, signOut } = useAuth();
@@ -17,6 +17,10 @@ const DriverApp = () => {
 
   const handleLogout = async () => {
     await signOut();
+    navigate('/');
+  };
+
+  const handleGoHome = () => {
     navigate('/');
   };
 
@@ -30,10 +34,16 @@ const DriverApp = () => {
               <h1 className="text-3xl font-bold">Driver Portal</h1>
               <p className="text-muted-foreground">Welcome back, {user?.user_metadata?.full_name || user?.email}!</p>
             </div>
-            <Button onClick={handleLogout} variant="outline">
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleGoHome} variant="outline">
+                <Home className="h-4 w-4 mr-2" />
+                Home
+              </Button>
+              <Button onClick={handleLogout} variant="outline">
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
 
           {/* Driver Tabs */}

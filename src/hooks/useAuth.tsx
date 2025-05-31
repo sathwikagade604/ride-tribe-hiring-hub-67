@@ -47,24 +47,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, userData?: any) => {
     try {
+      const redirectUrl = `${window.location.origin}/`;
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: userData
         }
       });
       
       if (error) {
         console.error('Signup error:', error);
-        toast.error(`Sign up failed: ${error.message}`);
+        
+        // Handle specific error cases
+        if (error.message.includes('already registered')) {
+          toast.error('This email is already registered. Please try logging in instead.');
+        } else if (error.message.includes('invalid email')) {
+          toast.error('Please enter a valid email address.');
+        } else {
+          toast.error(`Sign up failed: ${error.message}`);
+        }
         return { error };
       }
 
       if (data.user && !data.session) {
-        toast.success('Account created successfully! You can now log in.');
+        toast.success('Account created successfully! Please check your email to verify your account before logging in.');
       } else if (data.session) {
-        toast.success('Account created successfully!');
+        toast.success('Account created and verified successfully!');
         
         // Create profile based on user type
         if (userData?.user_type === 'driver') {
@@ -76,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               vehicle_type: userData.vehicle_type || 'sedan',
               phone_number: userData.phone
             }]);
-        } else {
+        } else if (userData?.user_type === 'rider') {
           await supabase
             .from('rider_profiles')
             .insert([{
@@ -111,11 +122,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error('Login error:', error);
-        toast.error(`Sign in failed: ${error.message}`);
+        
+        // Handle specific error cases
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Invalid email or password. Please check your credentials and try again.');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please check your email and click the verification link before logging in.');
+        } else if (error.message.includes('Too many requests')) {
+          toast.error('Too many login attempts. Please wait a moment and try again.');
+        } else {
+          toast.error(`Sign in failed: ${error.message}`);
+        }
         return { error };
       }
 
-      if (data.session) {
+      if (data.session && data.user) {
+        // Check if user has verified their email
+        if (!data.user.email_confirmed_at) {
+          await supabase.auth.signOut();
+          toast.error('Please verify your email address before logging in. Check your inbox for a verification link.');
+          return { error: new Error('Email not verified') };
+        }
+        
         toast.success('Login successful!');
       }
       
