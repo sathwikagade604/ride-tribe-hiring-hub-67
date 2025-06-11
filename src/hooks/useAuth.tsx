@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -106,15 +105,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } else if (userData?.user_type === 'employee') {
           try {
-            // Store employee data in profiles table with metadata
+            // Store employee data in profiles table
             await supabase
               .from('profiles')
               .insert([{
                 id: data.user.id,
+                email: data.user.email!,
                 full_name: userData.full_name,
-                phone_number: userData.phone,
-                employee_id: userData.employee_id,
-                department: userData.department,
+                phone: userData.phone || '0000000000',
                 user_type: 'employee'
               }]);
           } catch (profileError) {

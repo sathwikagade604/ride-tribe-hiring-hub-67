@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/sonner';
@@ -6,6 +5,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import PublicAuthForm from './PublicAuthForm';
 import CompanyAccessForm from './CompanyAccessForm';
 import CompanySignupForm from './CompanySignupForm';
+import AutoErrorResolver from './AutoErrorResolver';
 import { RoleSignupValues, RoleLoginValues, CompanyAccessValues, CompanySignupValues } from '@/schemas/authSchemas';
 
 interface RoleBasedAuthProps {
@@ -122,40 +122,38 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
     );
   }
 
-  if (isCompanySignup) {
-    return (
-      <CompanySignupForm
-        onSignup={onCompanySignup}
-        onBackToLogin={() => setIsCompanySignup(false)}
-        onBackToPublic={() => {
-          setIsCompanyAccess(false);
-          setIsCompanySignup(false);
-        }}
-        isSubmitting={isSubmitting}
-      />
-    );
-  }
-
-  if (isCompanyAccess) {
-    return (
-      <CompanyAccessForm
-        onLogin={onCompanyAccess}
-        onSignup={() => setIsCompanySignup(true)}
-        onBackToPublic={() => setIsCompanyAccess(false)}
-        isSubmitting={isSubmitting}
-      />
-    );
-  }
-
   return (
-    <PublicAuthForm
-      isSignup={isSignup}
-      onSignup={onSignup}
-      onLogin={onLogin}
-      onToggleMode={() => setIsSignup(!isSignup)}
-      onCompanyAccess={() => setIsCompanyAccess(true)}
-      isSubmitting={isSubmitting}
-    />
+    <div className="space-y-6">
+      <AutoErrorResolver onErrorResolved={() => console.log('Errors resolved')} />
+      
+      {isCompanySignup ? (
+        <CompanySignupForm
+          onSignup={onCompanySignup}
+          onBackToLogin={() => setIsCompanySignup(false)}
+          onBackToPublic={() => {
+            setIsCompanyAccess(false);
+            setIsCompanySignup(false);
+          }}
+          isSubmitting={isSubmitting}
+        />
+      ) : isCompanyAccess ? (
+        <CompanyAccessForm
+          onLogin={onCompanyAccess}
+          onSignup={() => setIsCompanySignup(true)}
+          onBackToPublic={() => setIsCompanyAccess(false)}
+          isSubmitting={isSubmitting}
+        />
+      ) : (
+        <PublicAuthForm
+          isSignup={isSignup}
+          onSignup={onSignup}
+          onLogin={onLogin}
+          onToggleMode={() => setIsSignup(!isSignup)}
+          onCompanyAccess={() => setIsCompanyAccess(true)}
+          isSubmitting={isSubmitting}
+        />
+      )}
+    </div>
   );
 };
 
