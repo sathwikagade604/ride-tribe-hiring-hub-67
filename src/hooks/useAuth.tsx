@@ -106,13 +106,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } else if (userData?.user_type === 'employee') {
           try {
+            // Store employee data in profiles table with metadata
             await supabase
-              .from('employee_profiles')
+              .from('profiles')
               .insert([{
-                user_id: data.user.id,
+                id: data.user.id,
+                full_name: userData.full_name,
+                phone_number: userData.phone,
                 employee_id: userData.employee_id,
                 department: userData.department,
-                phone_number: userData.phone
+                user_type: 'employee'
               }]);
           } catch (profileError) {
             console.error('Error creating employee profile:', profileError);
