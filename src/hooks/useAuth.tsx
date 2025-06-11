@@ -4,7 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
-type AppRole = 'admin' | 'driver' | 'rider';
+type AppRole = 'admin' | 'driver' | 'rider' | 'employee';
 
 interface AuthContextType {
   user: User | null;
@@ -66,6 +66,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           toast.error('This email is already registered. Please try logging in instead.');
         } else if (error.message.includes('invalid email')) {
           toast.error('Please enter a valid email address.');
+        } else if (error.message.includes('Password should be')) {
+          toast.error('Password should be at least 6 characters long.');
         } else {
           toast.error(`Sign up failed: ${error.message}`);
         }
@@ -77,31 +79,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (data.session) {
         toast.success('Account created and verified successfully!');
         
-        // Create profile based on user type
+        // Create appropriate profile based on user type
         if (userData?.user_type === 'driver') {
-          await supabase
-            .from('driver_profiles')
-            .insert([{
-              user_id: data.user.id,
-              license_number: userData.license_number || 'TEMP_LICENSE',
-              vehicle_type: userData.vehicle_type || 'sedan',
-              phone_number: userData.phone
-            }]);
+          try {
+            await supabase
+              .from('driver_profiles')
+              .insert([{
+                user_id: data.user.id,
+                license_number: userData.license_number || 'TEMP_LICENSE',
+                vehicle_type: userData.vehicle_type || 'sedan',
+                phone_number: userData.phone
+              }]);
+          } catch (profileError) {
+            console.error('Error creating driver profile:', profileError);
+          }
         } else if (userData?.user_type === 'rider') {
-          await supabase
-            .from('rider_profiles')
-            .insert([{
-              user_id: data.user.id,
-              phone_number: userData.phone
-            }]);
+          try {
+            await supabase
+              .from('rider_profiles')
+              .insert([{
+                user_id: data.user.id,
+                phone_number: userData.phone
+              }]);
+          } catch (profileError) {
+            console.error('Error creating rider profile:', profileError);
+          }
+        } else if (userData?.user_type === 'employee') {
+          try {
+            await supabase
+              .from('employee_profiles')
+              .insert([{
+                user_id: data.user.id,
+                employee_id: userData.employee_id,
+                department: userData.department,
+                phone_number: userData.phone
+              }]);
+          } catch (profileError) {
+            console.error('Error creating employee profile:', profileError);
+          }
         }
 
         // Assign user role based on user type
         if (userData?.user_type) {
-          await supabase.rpc('assign_user_role', {
-            _user_id: data.user.id,
-            _role: userData.user_type
-          });
+          try {
+            await supabase.rpc('assign_user_role', {
+              _user_id: data.user.id,
+              _role: userData.user_type
+            });
+          } catch (roleError) {
+            console.error('Error assigning user role:', roleError);
+          }
         }
       }
       
@@ -130,6 +157,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           toast.error('Please check your email and click the verification link before logging in.');
         } else if (error.message.includes('Too many requests')) {
           toast.error('Too many login attempts. Please wait a moment and try again.');
+        } else if (error.message.includes('invalid_grant')) {
+          toast.error('Please verify your email address before logging in.');
         } else {
           toast.error(`Sign in failed: ${error.message}`);
         }

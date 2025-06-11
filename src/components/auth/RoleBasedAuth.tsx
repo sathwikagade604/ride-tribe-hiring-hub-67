@@ -29,6 +29,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
         license_number: data.role === 'driver' ? data.licenseNumber : undefined,
       };
 
+      console.log('Public signup attempt:', { email: data.email, role: data.role });
       const { error } = await signUp(data.email, data.password, userData);
       
       if (!error) {
@@ -46,13 +47,12 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
   const onLogin = async (data: RoleLoginValues) => {
     setIsSubmitting(true);
     try {
+      console.log('Public login attempt:', { email: data.email, role: data.role });
       const { error } = await signIn(data.email, data.password);
       
       if (!error) {
         toast.success('Login successful!');
         onSuccess(data.role);
-      } else {
-        toast.error('Invalid credentials or account not verified. Please check your email and password.');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -65,13 +65,12 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
   const onCompanyAccess = async (data: CompanyAccessValues) => {
     setIsSubmitting(true);
     try {
+      console.log('Company access attempt:', { email: data.email, department: data.department });
       const { error } = await signIn(data.email, data.password);
       
       if (!error) {
         toast.success('Company access granted!');
         onSuccess(data.department);
-      } else {
-        toast.error('Invalid company credentials. Please check your email and password.');
       }
     } catch (error) {
       console.error('Company access error:', error);
@@ -96,6 +95,7 @@ const RoleBasedAuth: React.FC<RoleBasedAuthProps> = ({ onSuccess }) => {
         employee_id: data.employeeId,
         department: data.department,
         user_type: 'employee',
+        phone: '0000000000', // Default phone for company signup
       };
 
       console.log('Calling signUp with userData:', userData);
